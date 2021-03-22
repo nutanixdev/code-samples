@@ -1,0 +1,1 @@
+{"cluster_ip":"10.0.0.1","username":"admin","ctr_name":"container1","ctr_uuid":"00000000-0000-0000-0000-000000000000","iso_url":"http://centos.melbourneitmirror.net/8.1.1911/isos/x86_64/CentOS-8.1.1911-x86_64-dvd1.iso","image_name":"CentOS8_DVD","image_annotation":"CentOS 8 DVD image created with Prism REST API v2.0"}

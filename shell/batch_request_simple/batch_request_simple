@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# shell script to demonstrate basic usage of the v3 batch API
+# requires the existence of a JSON-formatted file that contains:
+#
+# cluster/CVM IP
+# username
+#
+# this file must be named "batch_request_simple.json" and be formatted as follows:
+#
+# {"cluster_ip":"10.0.0.1","username":"admin"}
+
+JSON_FILE="./batch_request_simple.json"
+JSON_CONTENTS="`cat ${JSON_FILE}`"
+
+JQ=`command -v jq`
+CURL=`command -v curl`
+
+if [ "$JQ" = "" ] || [ "$CURL" = "" ]; then
+	echo "jq command not found."
+else
+	CLUSTER_IP=`echo -n $JSON_CONTENTS | jq -r ".cluster_ip"`
+	USERNAME=`echo -n $JSON_CONTENTS | jq -r ".username"`
+
+	# get the password from the user
+	echo "Please enter your cluster password (will not be shown on screen):"
+	read -s PASSWORD
+
+	# generate the HTTP Basic Authorization header
+	AUTH_HEADER="`echo -n $USERNAME:$PASSWORD | base64`"
+
+	# submit the request
+	curl --insecure -X POST \
+        --connect-timeout 5 \
+	https://$CLUSTER_IP:9440/api/nutanix/v3/batch \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Basic $AUTH_HEADER" \
+  -H "cache-control: no-cache" \
+  -d "{
+        \"action_on_failure\": \"CONTINUE\",
+        \"execution_order\": \"SEQUENTIAL\",
+        \"api_request_list\": [
+            {
+                \"operation\": \"POST\",
+                \"path_and_params\": \"/api/nutanix/v3/vms\",
+                \"body\": {
+                    \"spec\": {
+                        \"name\": \"vm_from_batch\",
+                        \"resources\": {}
+                    },
+                    \"metadata\": {
+                        \"kind\": \"vm\"
+                    }
+                }
+            },
+            {
+                \"operation\": \"POST\",
+                \"path_and_params\": \"/api/nutanix/v3/images\",
+                \"body\": {
+                    \"spec\": {
+                        \"name\": \"image_from_batch\",
+                        \"resources\": {
+                            \"image_type\": \"DISK_IMAGE\",
+                            \"source_uri\": \"https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1905.qcow2\"
+                        },
+                        \"description\": \"Image created via v3 API batch request\"
+                    },
+                    \"api_version\": \"3.1.0\",
+                    \"metadata\": {
+                        \"kind\": \"image\",
+                        \"categories\": {},
+                        \"name\": \"image_from_batch\"
+                    }
+                }
+            }
+        ],
+        \"api_version\": \"3.0\"
+    }"
+
+fi

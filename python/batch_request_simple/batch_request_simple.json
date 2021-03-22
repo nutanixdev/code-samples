@@ -1,0 +1,44 @@
+{
+    "cluster_ip": "10.0.0.1",
+    "username": "admin",
+    "batch_details":{
+        "action_on_failure": "CONTINUE",
+        "execution_order": "SEQUENTIAL",
+        "api_request_list": [
+            {
+                "operation": "POST",
+                "path_and_params": "/api/nutanix/v3/vms",
+                "body": {
+                    "spec": {
+                        "name": "vm_from_batch",
+                        "resources": {}
+                    },
+                    "metadata": {
+                        "kind": "vm"
+                    }
+                }
+            },
+            {
+                "operation": "POST",
+                "path_and_params": "/api/nutanix/v3/images",
+                "body": {
+                    "spec": {
+                        "name": "image_from_batch",
+                        "resources": {
+                            "image_type": "DISK_IMAGE",
+                            "source_uri": "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1905.qcow2"
+                        },
+                        "description": "Image created via v3 API batch request"
+                    },
+                    "api_version": "3.1.0",
+                    "metadata": {
+                        "kind": "image",
+                        "categories": {},
+                        "name": "image_from_batch"
+                    }
+                }
+            }
+        ],
+        "api_version": "3.0"
+    }
+}

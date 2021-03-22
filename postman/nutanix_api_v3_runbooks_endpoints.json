@@ -1,0 +1,323 @@
+{
+	"info": {
+		"_postman_id": "2f6e1fe5-7b53-4966-92a3-75b0cd230a6b",
+		"name": "Nutanix v3 API - runbooks & endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "/runbooks",
+			"item": [
+				{
+					"name": "API v3 - List Runbooks",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"kind\":\"runbook\"}",
+							"options": {
+								"raw": {}
+							}
+						},
+						"url": {
+							"raw": "https://{{pc_ip}}:9440/api/nutanix/v3/runbooks/list",
+							"protocol": "https",
+							"host": [
+								"{{pc_ip}}"
+							],
+							"port": "9440",
+							"path": [
+								"api",
+								"nutanix",
+								"v3",
+								"runbooks",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "API v3 - Get Runbook",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://{{pc_ip}}:9440/api/nutanix/v3/runbooks/{{runbook_uuid}}",
+							"protocol": "https",
+							"host": [
+								"{{pc_ip}}"
+							],
+							"port": "9440",
+							"path": [
+								"api",
+								"nutanix",
+								"v3",
+								"runbooks",
+								"{{runbook_uuid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "API v3 - Run Runbook (Simple)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}",
+							"options": {
+								"raw": {}
+							}
+						},
+						"url": {
+							"raw": "https://{{pc_ip}}:9440/api/nutanix/v3/runbooks/{{runbook_uuid}}/run",
+							"protocol": "https",
+							"host": [
+								"{{pc_ip}}"
+							],
+							"port": "9440",
+							"path": [
+								"api",
+								"nutanix",
+								"v3",
+								"runbooks",
+								"{{runbook_uuid}}",
+								"run"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "API v3 - Get Runbook Runlog",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}",
+							"options": {
+								"raw": {}
+							}
+						},
+						"url": {
+							"raw": "https://{{pc_ip}}:9440/api/nutanix/v3/runbooks/runlogs/{{runlog_uuid}}",
+							"protocol": "https",
+							"host": [
+								"{{pc_ip}}"
+							],
+							"port": "9440",
+							"path": [
+								"api",
+								"nutanix",
+								"v3",
+								"runbooks",
+								"runlogs",
+								"{{runlog_uuid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "API v3 - Run Runbook (Advanced)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"spec\": {\n    \"args\": [\n    ],\n    \"default_target_reference\": {\n      \"kind\": \"app_endpoint\",\n      \"name\": \"{{endpoint_name}}\",\n      \"uuid\": \"{{endpoint_uuid}}\"\n    }\n  }\n}",
+							"options": {
+								"raw": {}
+							}
+						},
+						"url": {
+							"raw": "https://{{pc_ip}}:9440/api/nutanix/v3/runbooks/{{runbook_uuid}}/run",
+							"protocol": "https",
+							"host": [
+								"{{pc_ip}}"
+							],
+							"port": "9440",
+							"path": [
+								"api",
+								"nutanix",
+								"v3",
+								"runbooks",
+								"{{runbook_uuid}}",
+								"run"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "API v3 - Download Runlog Output",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://{{pc_ip}}:9440/api/nutanix/v3/runbooks/runlogs/{{runlog_uuid}}/output/download",
+							"protocol": "https",
+							"host": [
+								"{{pc_ip}}"
+							],
+							"port": "9440",
+							"path": [
+								"api",
+								"nutanix",
+								"v3",
+								"runbooks",
+								"runlogs",
+								"{{runlog_uuid}}",
+								"output",
+								"download"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "/endpoints",
+			"item": [
+				{
+					"name": "API v3 - List Endpoints",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"kind\": \"endpoint\"}",
+							"options": {
+								"raw": {}
+							}
+						},
+						"url": {
+							"raw": "https://{{pc_ip}}:9440/api/nutanix/v3/endpoints/list",
+							"protocol": "https",
+							"host": [
+								"{{pc_ip}}"
+							],
+							"port": "9440",
+							"path": [
+								"api",
+								"nutanix",
+								"v3",
+								"endpoints",
+								"list"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "1246ae31-1cb6-4fc6-96a1-97c44120842f",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "f23e2f6b-784e-4c70-9367-9b0eb303609d",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "b36d1271-977d-4c92-b5d7-4dff09da6793",
+			"key": "pc_ip",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"id": "eff058e5-b627-4672-a0fa-2162897bbe81",
+			"key": "runbook_uuid",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"id": "54170959-bc9e-4770-829b-116cdc0b6621",
+			"key": "runlog_uuid",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"id": "292e7083-0f82-450b-b879-46956f98dab6",
+			"key": "endpoint_uuid",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"id": "f4f6c490-4e61-4194-9ef8-44ce9fe77118",
+			"key": "endpoint_name",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"protocolProfileBehavior": {}
+}

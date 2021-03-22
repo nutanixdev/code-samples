@@ -1,0 +1,1 @@
+{"cluster_ip":"10.0.0.1","username":"admin","vm_name":"DetailedVMViaAPIv3","cluster_name":"cluster_name_here","cluster_uuid":"00000000-0000-0000-0000-000000000000","vcpus_per_socket":1,"num_sockets":1,"memory_size_mib":1024,"first_disk_size_mib":1024,"first_nic_subnet_name":"subnet_name_here","first_nic_subnet_uuid":"00000000-0000-0000-0000-000000000000"}
