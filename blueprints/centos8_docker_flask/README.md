@@ -30,7 +30,7 @@ A screenshot of the created app is shown below:
 - Clone this repo:
 
   ```
-  git clone https://github.com/nutanix/code-samples
+  git clone https://github.com/nutanixdev/code-samples
   ```
 
 **or:**
