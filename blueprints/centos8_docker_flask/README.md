@@ -15,7 +15,7 @@ This blueprint will create a small demo application that provides the following 
 
 A screenshot of the created app is shown below:
 
-![App running](./screenshot.png)
+![App running](./images/screenshot.png)
 
 ## Requirements
 
@@ -46,10 +46,18 @@ A screenshot of the created app is shown below:
 6. When prompted, please select an appropriate Calm project for your environment
 
    *Note:* This setting will be different for all users
-   
+
 7. When prompted, enter **nutanix/4u** as the blueprint password (this will allow the blueprint to import preconfigured SSH credentials)
 8. Launch the app using the **Launch** option
+
+   - Defaults have been entered for the location of our Python app; this is simply used to demonstrate Nutanix Calm's ability to accept input from the user and don't need to be changed for this demo
+   - **Environment** and **App Profile** shouldn't need to be changed
+
 9.  When the app has finished launching, browse to the VM's IP address on port 5001
+
+    To get the IP address for a Calm managed virtual machine, please see the example screenshot below:
+
+    ![Running service's IP address](./images/service_ip_address.png)
 
 *Note:* The app will install CentOS 8 then update all system packages.  Depending on the speed of your internet connection and on how many packages there are to update, this can take some time.
 
