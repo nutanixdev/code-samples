@@ -29,15 +29,15 @@ A screenshot of the created app is shown below:
 
 1. Clone this repo:
 
-  - Either using the terminal:
+   - Either using the terminal:
 
-    ```
-    git clone https://github.com/nutanixdev/code-samples
-    ```
+     ```
+     git clone https://github.com/nutanixdev/code-samples
+     ```
 
-    **or**:
+     **or**:
 
-  - Download a complete copy of this repository using the **Download** button provided by GitHub
+   - Download a complete copy of this repository using the **Download** button provided by GitHub
 
 2. Login to Prism Central
 3. From the "hamburger" or ellipsis menu, select **Services**
