@@ -7,7 +7,8 @@ This blueprint will create a small demo application that provides the following 
 - Installs Python 3.8
 - Installs Docker and Docker Compose
 - Creates and configures a virtual environment for our Python app
-- Launches required Docker containers using the Python-standard `requirements.txt` file
+- Launches required Docker containers using the provided `docker-compose.yml` and `Dockerfile` files
+- Install dependencies within the container using the Python-standard `requirements.txt` file
 - Exposes TCP port 5001 on the container so that users can access the Python Flask app
 
 ## The App
