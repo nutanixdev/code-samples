@@ -42,7 +42,7 @@ A screenshot of the created app is shown below:
 2. Login to Prism Central
 3. From the "hamburger" or ellipsis menu, select **Services**
 4. Open Nutanix Calm
-5. Using the **Upload Blueprint** option, upload the blueprint from the **blueprints/centos8_docker_flask** directory
+5. Using the **Upload Blueprint** option, upload the `centos8_docker_flask.json` blueprint file from the **blueprints/centos8_docker_flask** directory
 6. When prompted, enter **nutanix/4u** as the blueprint password (this will allow the blueprint to import preconfigured SSH credentials)
 7. Launch the app using the **Launch** option
 8. When the app has finished launching, browse to the VM's IP address on port 5001
