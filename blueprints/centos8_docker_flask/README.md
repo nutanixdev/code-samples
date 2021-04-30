@@ -11,6 +11,15 @@ This blueprint will create a small demo application that provides the following 
 - Install dependencies within the container using the Python-standard `requirements.txt` file
 - Exposes TCP port 5001 on the container so that users can access the Python Flask app
 
+## Intended Audience
+
+There is assumption that users of this blueprint have previous exposure to the Nutanix Calm UI, in particular:
+
+- Uploading blueprints
+- Launching blueprints
+- Retrieving launched application information e.g. virtual machine/service IP addresses
+- Monitoring of launch progress using the **Audit** tab
+
 ## The App
 
 A screenshot of the created app is shown below:
