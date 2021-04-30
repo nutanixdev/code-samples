@@ -12,7 +12,7 @@ This blueprint will create a small demo application that provides the following 
 
 ## The App
 
-A screenshot of the created is shown below:
+A screenshot of the created app is shown below:
 
 ![App running](./screenshot.png)
 
