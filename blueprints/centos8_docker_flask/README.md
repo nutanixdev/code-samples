@@ -29,13 +29,16 @@ A screenshot of the created app is shown below:
 
 - Clone this repo:
 
-  ```
-  git clone https://github.com/nutanixdev/code-samples
-  ```
+  - Either using the terminal:
 
-**or:**
+    ```
+    git clone https://github.com/nutanixdev/code-samples
+    ```
 
-- Download a complete copy of this repository using the **Download** button provided by GitHub
+    **or**:
+
+  - Download a complete copy of this repository using the **Download** button provided by GitHub
+
 - Login to Prism Central
 - From the "hamburger" or ellipsis menu, select **Services**
 - Open Nutanix Calm
