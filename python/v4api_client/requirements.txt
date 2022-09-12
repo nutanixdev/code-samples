@@ -1,0 +1,4 @@
+requests==2.28.1
+argparse==1.4.0
+black==22.6.0
+flake8==5.0.4

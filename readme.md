@@ -18,11 +18,20 @@ Each script language covered in this repository has an accompanying readme file 
 - **powershell**: Windows PowerShell scripts, based on PowerShell >= 5.1
 - **shell**: Bash scripts to run in a Linux terminal (please note that the Windows 10 Bash Shell has not been tested with these scripts!)
 - **csharp**: Single-file/script Microsoft C# applications, typically run in the console
+- **go** - Golang examples
+- **postman** - JSON payloads designed for use with the [Postman](https://getpostman.com) API development application
+- **blueprints** - Nutanix Calm demo blueprints
 
-## Support
+## License
+
+Please see the `LICENSE` file distributed with this repository.
+
+## Support & Disclaimer
 
 These scripts are *unofficial* and are not supported or actively maintained by Nutanix in any way.
 
 In addition, please also be advised that these scripts may contain code that does not follow best practices.  Please check through each script to ensure the configuration suits your requirements.
 
 **Changes will be required before these scripts can be used in production environments.**
+
+Please see the `.disclaimer` file distributed with this repository.
