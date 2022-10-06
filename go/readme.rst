@@ -12,7 +12,7 @@ To run the Go code samples, please ensure the following requirements are met:
 
 #. Go is already `installed on your system <https://golang.org/doc/install>`_
 
-#. You have the **github.com/tidwall/gjson** package installed:
+#. In addition to the requirements list per-sample, you should have the **github.com/tidwall/gjson** package installed:
 
    .. code-block:: bash
 
