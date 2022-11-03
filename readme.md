@@ -22,9 +22,11 @@ Each script language covered in this repository has an accompanying readme file 
 - **postman** - JSON payloads designed for use with the [Postman](https://getpostman.com) API development application
 - **blueprints** - Nutanix Calm demo blueprints
 
-## License
+## License & Usage
 
 Please see the `LICENSE` file distributed with this repository.
+
+For full terms and conditions, please see [Nutanix Terms of Use](https://www.nutanix.com/legal/terms-of-use).
 
 ## Support & Disclaimer
 
