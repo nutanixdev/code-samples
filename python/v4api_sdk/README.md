@@ -17,7 +17,7 @@ Code sample to demonstrate use of the new Nutanix v4 APIs via Python SDK.
   pip install -r requirements.txt
   ```
 
-- Run script:
+- Run script e.g. list Prism Central images:
 
   ```
   python list_images_sdk.py <prism_central_ip> <username>

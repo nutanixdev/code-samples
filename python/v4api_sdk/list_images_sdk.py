@@ -6,7 +6,6 @@ import getpass
 import argparse
 import urllib3
 import sys
-# from pprint import pprint
 
 import ntnx_vmm_py_client
 from ntnx_vmm_py_client import ApiClient as VMMClient
@@ -69,16 +68,24 @@ if __name__ == "__main__":
         # without filters
         images_list_no_filters = api_instance.get_images_list()
         if images_list_no_filters.metadata.total_available_results > 0:
-            print(f"Images found without any filters: {len(images_list_no_filters.data)}")
+            print(
+                f"Images found without any filters: {len(images_list_no_filters.data)}"
+            )
         else:
             print("No images found.")
         # with filters
-        images_list_with_filter = api_instance.get_images_list(_filter="startswith(name, 'U')")
+        images_list_with_filter = api_instance.get_images_list(
+            _filter="startswith(name, 'U')"
+        )
         if images_list_with_filter.metadata.total_available_results > 0:
-            print(f"Images with name beginning with 'U': {len(images_list_with_filter.data)}")
+            print(
+                f"Images with name beginning with 'U': {len(images_list_with_filter.data)}"
+            )
         else:
-            print("No images found with name starting with \"U\".")
-        images_list_matches = api_instance.get_images_list(_filter="name in ('FSC 1.1.0','prod','staging')")
+            print('No images found with name starting with "U".')
+        images_list_matches = api_instance.get_images_list(
+            _filter="name in ('scenario01')"
+        )
         if images_list_matches.metadata.total_available_results > 0:
             print(f"Images found with names in list: {len(images_list_matches.data)}")
         else:
@@ -88,10 +95,12 @@ if __name__ == "__main__":
         if images_list_orderby_name.metadata.total_available_results > 0:
             print(f"\nImages found in PC instance, ordered by name, ascending:")
             for image in images_list_orderby_name.data:
-                print(f"Image name: {image.name}")
+                print(f"Image name: {image.name} ({image.ext_id})")
         else:
             print("No images found while using order by name filter.")
-        images_list_orderby_size = api_instance.get_images_list(_orderby="sizeBytes desc")
+        images_list_orderby_size = api_instance.get_images_list(
+            _orderby="sizeBytes desc"
+        )
         if images_list_orderby_size.metadata.total_available_results > 0:
             print(f"\nImages found in PC instance, ordered by size, ascending:")
             for image in images_list_orderby_size.data:
@@ -99,6 +108,8 @@ if __name__ == "__main__":
         else:
             print("No images found while using order by size filter.")
     except VMMException as e:
-        print(f"Unable to authenticate using the supplied credentials.  \
+        print(
+            f"Unable to authenticate using the supplied credentials.  \
 Please check your username and/or password, then try again.  \
-Exception details: {e}")
+Exception details: {e}"
+        )
