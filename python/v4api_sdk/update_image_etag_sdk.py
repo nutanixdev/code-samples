@@ -1,11 +1,10 @@
 """
-Use the Nutanix v4 API to update a Prism Central image
+Use the Nutanix v4 Python SDK to update a Prism Central image
 """
 
 import getpass
 import argparse
 import urllib3
-import uuid
 import sys
 
 import ntnx_vmm_py_client
@@ -91,9 +90,6 @@ if __name__ == "__main__":
 
         # add the existing image's Etag as a new request header
         api_client.add_default_header(header_name="If-Match", header_value=existing_image_etag)
-        # create a new UUID to be used as the value of the Ntnx-Request-Id header
-        request_id = str(uuid.uuid1())
-        api_client.add_default_header(header_name="Ntnx-Request-Id", header_value=request_id)
 
         # update the image using a synchronous request (will wait until completion before returning)
         image_update = api_instance.update_image_by_ext_id(body=new_image, extId=existing_image.data.ext_id, async_req=False)
