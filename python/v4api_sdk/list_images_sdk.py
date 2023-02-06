@@ -102,7 +102,7 @@ if __name__ == "__main__":
             _orderby="sizeBytes desc"
         )
         if images_list_orderby_size.metadata.total_available_results > 0:
-            print(f"\nImages found in PC instance, ordered by size, ascending:")
+            print(f"\nImages found in PC instance, ordered by size, descending:")
             for image in images_list_orderby_size.data:
                 print(f"Image name: {image.name}, size (bytes): {image.size_bytes}")
         else:
