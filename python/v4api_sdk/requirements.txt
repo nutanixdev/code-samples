@@ -2,8 +2,10 @@ requests==2.28.1
 black==22.6.0
 flake8==5.0.4
 pylint==2.14.5
-ntnx_vmm_py_client==4.0.1a1
+ntnx_vmm_py_client==4.0.2a1
 ntnx_lcm_py_client==4.0.1a1
-ntnx_prism_py_client==4.0.1a1
-ntnx_clustermgmt_py_client==4.0.1a1
-ntnx_aiops_py_client==4.0.1a1
+ntnx_prism_py_client==4.0.2a1
+ntnx_clustermgmt_py_client==4.0.2a2
+ntnx_aiops_py_client==4.0.2a1
+ntnx_networking_py_client==4.0.1a1
+ntnx_storage_py_client==4.0.2a3
