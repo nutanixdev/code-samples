@@ -10,7 +10,9 @@ import ntnx_prism_py_client
 from ntnx_prism_py_client import ApiClient as PrismClient
 from ntnx_prism_py_client import Configuration as PrismConfiguration
 
-from ntnx_prism_py_client.Ntnx.prism.v4.config.TaskGetResponse import TaskGetResponse as TaskGetResponse
+from ntnx_prism_py_client.Ntnx.prism.v4.config.TaskGetResponse import (
+    TaskGetResponse
+)
 
 
 class Utils:
@@ -18,6 +20,7 @@ class Utils:
     class to manage simple reusable functions across the Python
     v4 API code samples
     """
+
     prism_config: PrismConfiguration
 
     def __init__(self, pc_ip: str, username: str, password: str):
@@ -34,9 +37,10 @@ class Utils:
         self.prism_client.add_default_header(
             header_name="Accept-Encoding", header_value="gzip, deflate, br"
         )
-        self.prism_instance = ntnx_prism_py_client.api.TaskApi(api_client=self.prism_client)
+        self.prism_instance = ntnx_prism_py_client.api.TaskApi(
+            api_client=self.prism_client
+        )
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
 
     def get_task(self, ext_id: str) -> TaskGetResponse:
         """
@@ -45,9 +49,7 @@ class Utils:
         task = self.prism_instance.task_get(f"ZXJnb24=:{ext_id}")
         if task:
             return task
-        else:
-            return None
-
+        return None
 
     def confirm(self, message: str):
         """
@@ -57,8 +59,9 @@ class Utils:
         yes_no = input(f"{message} (yes/NO): ").lower()
         return yes_no == "yes"
 
-
-    def monitor_task(self, task_ext_id, task_name, pc_ip, username, password, poll_timeout):
+    def monitor_task(
+        self, task_ext_id, task_name, pc_ip, username, password, poll_timeout, prefix = "ZXJnb24=:"
+    ):
         """
         method used to monitor Prism Central tasks
         will print a series of period characters and re-check task
@@ -76,7 +79,7 @@ class Utils:
             header_name="Accept-Encoding", header_value="gzip, deflate, br"
         )
         prism_instance = ntnx_prism_py_client.api.TaskApi(api_client=prism_client)
-        task = prism_instance.task_get(f"ZXJnb24=:{task_ext_id}")
+        task = prism_instance.task_get(f"{prefix}{task_ext_id}")
         units = "second" if poll_timeout == 1 else "seconds"
         print(
             f"{task_name} running, checking progress every {poll_timeout} {units} ...",
@@ -89,4 +92,4 @@ class Utils:
                 print(" finished.")
                 break
             time.sleep(int(poll_timeout))
-            task = prism_instance.task_get(f"ZXJnb24=:{task_ext_id}")
+            task = prism_instance.task_get(f"{prefix}{task_ext_id}")

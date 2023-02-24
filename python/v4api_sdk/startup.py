@@ -2,6 +2,8 @@ import sys
 import urllib3
 import uuid
 import os
+import requests
+from requests.auth import HTTPBasicAuth
 import json
 from dataclasses import dataclass
 
@@ -67,6 +69,9 @@ user_config = Config(
     pc_password=config_json["pc_password"],
     cluster_name=config_json["cluster_name"]
 )
+
+# create HTTPBasicAuth instance, for use cases requiring basic auth vs SDK auth
+prism_central_auth = HTTPBasicAuth(user_config.pc_username, user_config.pc_password)
 
 # set to true if you have a connection to Prism Central
 live = True
