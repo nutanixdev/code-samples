@@ -1,5 +1,5 @@
 """
-Use the Nutanix v4 API SDKs to request and parse a list of all available images
+Use the Nutanix v4 Python SDK to update a Prism Central image
 """
 
 import getpass
@@ -14,7 +14,7 @@ from ntnx_vmm_py_client.rest import ApiException as VMMException
 
 """
 suppress warnings about insecure connections
-please consider the security implications before
+consider the security implications before
 doing this in a production environment
 """
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -65,48 +65,36 @@ if __name__ == "__main__":
 
         api_client = VMMClient(configuration=config)
         api_instance = ntnx_vmm_py_client.api.ImagesApi(api_client=api_client)
-        # without filters
-        images_list_no_filters = api_instance.get_images_list()
-        if images_list_no_filters.metadata.total_available_results > 0:
+        # get a list of existing images
+        images_list = api_instance.get_images_list()
+        if images_list.metadata.total_available_results > 0:
             print(
-                f"Images found without any filters: {len(images_list_no_filters.data)}"
+                f"Images found: {len(images_list.data)}"
             )
         else:
             print("No images found.")
-        # with filters
-        images_list_with_filter = api_instance.get_images_list(
-            _filter="startswith(name, 'U')"
-        )
-        if images_list_with_filter.metadata.total_available_results > 0:
-            print(
-                f"Images with name beginning with 'U': {len(images_list_with_filter.data)}"
-            )
-        else:
-            print('No images found with name starting with "U".')
-        images_list_matches = api_instance.get_images_list(
-            _filter="name in ('scenario01')"
-        )
-        if images_list_matches.metadata.total_available_results > 0:
-            print(f"Images found with names in list: {len(images_list_matches.data)}")
-        else:
-            print("No images found matching this filter list.")
-        # using _orderby
-        images_list_orderby_name = api_instance.get_images_list(_orderby="name asc")
-        if images_list_orderby_name.metadata.total_available_results > 0:
-            print(f"\nImages found in PC instance, ordered by name, ascending:")
-            for image in images_list_orderby_name.data:
-                print(f"Image name: {image.name} ({image.ext_id})")
-        else:
-            print("No images found while using order by name filter.")
-        images_list_orderby_size = api_instance.get_images_list(
-            _orderby="sizeBytes desc"
-        )
-        if images_list_orderby_size.metadata.total_available_results > 0:
-            print(f"\nImages found in PC instance, ordered by size, descending:")
-            for image in images_list_orderby_size.data:
-                print(f"Image name: {image.name}, size (bytes): {image.size_bytes}")
-        else:
-            print("No images found while using order by size filter.")
+            sys.exit()
+
+        # images have been found - update the first image in the list
+        # to begin, we must retrieve that image's details
+        existing_image = api_instance.get_image_by_ext_id(images_list.data[0].ext_id)
+
+        # get the existing image's Etag
+        existing_image_etag = existing_image.data._reserved["ETag"]
+
+        # create a new Prism Central image instance
+        new_image = ntnx_vmm_py_client.Ntnx.vmm.v4.images.Image.Image()
+        new_image.data = existing_image.data
+        new_image.name = f"{existing_image.data.name} - Updated"
+        new_image.type = existing_image.data.type
+
+        # add the existing image's Etag as a new request header
+        api_client.add_default_header(header_name="If-Match", header_value=existing_image_etag)
+
+        # update the image using a synchronous request (will wait until completion before returning)
+        image_update = api_instance.update_image_by_ext_id(body=new_image, extId=existing_image.data.ext_id, async_req=False)
+        print(image_update)
+
     except VMMException as e:
         print(
             f"Unable to authenticate using the supplied credentials.  \
