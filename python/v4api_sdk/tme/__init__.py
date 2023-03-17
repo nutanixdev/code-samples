@@ -5,6 +5,7 @@ v4 SDK code samples
 
 import time
 import urllib3
+from timeit import default_timer as timer
 
 import ntnx_prism_py_client
 from ntnx_prism_py_client import ApiClient as PrismClient
@@ -68,6 +69,7 @@ class Utils:
         status at the specified interval
         this version uses the Prism SDK
         """
+        start = timer()
         # print message until specified  task is finished
         prism_config = PrismConfiguration()
         prism_config.host = pc_ip
@@ -93,3 +95,10 @@ class Utils:
                 break
             time.sleep(int(poll_timeout))
             task = prism_instance.task_get(f"{prefix}{task_ext_id}")
+        end = timer()
+        elapsed_time = end - start
+        if elapsed_time <= 60:
+            duration = f"{round(elapsed_time, 0)} seconds"
+        else:
+            duration = f"{round(elapsed_time // 60, 0)} minutes"
+        return duration
