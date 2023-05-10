@@ -28,42 +28,6 @@ from ntnx_lcm_py_client.Ntnx.lcm.v4.common.UpdateSpec import UpdateSpec
 from tme import Utils
 
 
-# function to display the progress of an LCM task every "poll_timeout" seconds
-# useful for long-running tasks such as LCM inventory or pre-check
-def monitor_task_lcm(task_ext_id, task_name, client, poll_timeout):
-    """
-    method used to monitor Prism Central tasks
-    will print a series of period characters and re-check task
-    status at the specified interval
-    this version uses the LCM SDK
-    """
-    start = timer()
-    # print message until specified  task is finished
-    lcm_instance = ntnx_lcm_py_client.api.TaskApi(api_client=client)
-    task = lcm_instance.get_task_by_uuid(task_ext_id)
-    units = "second" if poll_timeout == 1 else "seconds"
-    print(
-        f"{task_name} running, checking progress every \
-{poll_timeout} {units} ...",
-        end="",
-    )
-    while True:
-        if task.data["status"] == "kRunning":
-            print(".", end="", flush=True)
-        else:
-            print(" finished.")
-            break
-        time.sleep(int(poll_timeout))
-        task = lcm_instance.get_task_by_uuid(task_ext_id)
-    end = timer()
-    elapsed_time = end - start
-    if elapsed_time <= 60:
-        duration = f"{round(elapsed_time, 0)} second(s)"
-    else:
-        duration = f"{round(elapsed_time // 60, 0)} minute(s)"
-    return(duration)
-
-
 def main():
     """
     suppress warnings about insecure connections
@@ -138,11 +102,13 @@ environment configuration."
             inventory = lcm_instance.inventory(async_req=False)
             # grab the unique identifier for the LCM inventory task
             inventory_task_ext_id = inventory.data.ext_id
-            inventory_duration = monitor_task_lcm(
+            inventory_duration = utils.monitor_task(
                 task_ext_id=inventory_task_ext_id,
                 task_name="Inventory",
-                client=lcm_client,
-                poll_timeout=poll_timeout,
+                pc_ip=utils.prism_config.host,
+                username=utils.prism_config.username,
+                password=utils.prism_config.password,
+                poll_timeout=poll_timeout
             )
             print(f"Inventory duration: {inventory_duration}.")
         else:
@@ -162,11 +128,13 @@ can be completed."
             print("Starting LCM pre-checks ...")
             precheck = lcm_instance.precheck(async_req=False, body=precheck_spec)
             precheck_task_ext_id = precheck.data.ext_id
-            precheck_duration = monitor_task_lcm(
+            precheck_duration = utils.monitor_task(
                 task_ext_id=precheck_task_ext_id,
                 task_name="Precheck",
-                client=lcm_client,
-                poll_timeout=poll_timeout,
+                pc_ip=utils.prism_config.host,
+                username=utils.prism_config.username,
+                password=utils.prism_config.password,
+                poll_timeout=poll_timeout
             )
             print(f"Precheck duration: {precheck_duration}.")
         else:
@@ -214,11 +182,12 @@ components can be updated:"
         if not update_info:
             print("No updates available, skipping LCM Update planning.\n")
         else:
-            # generate update plan
+            # generate LCM upgrade notifications
+            # note this is the new way of doing this; we previously used PlanApi
             # for this demo we'll do this for all recommendations returned
             # in the previous request
-            lcm_instance = ntnx_lcm_py_client.api.PlanApi(api_client=lcm_client)
-            print("Generating LCM Update Plan ...")
+            lcm_instance = ntnx_lcm_py_client.api.NotificationsApi(api_client=lcm_client)
+            print("Generating LCM Upgrade Notifications ...")
             entity_update_specs = EntityUpdateSpecs()
             entity_update_specs.entity_update_specs = []
             for recommendation in recommendations.data["entityUpdateSpecs"]:
@@ -227,13 +196,13 @@ components can be updated:"
                 spec.version = recommendation["version"]
                 entity_update_specs.entity_update_specs.append(spec)
             if len(entity_update_specs.entity_update_specs) > 0:
-                plan = lcm_instance.get_plan(async_req=False, body=entity_update_specs)
+                notifications = lcm_instance.gen_upgrade_notifications(async_req=False, body=entity_update_specs)
                 print(
-                    f"{len(plan.data.host_upgrade_plans)} host update plans generated:"
+                    f"{len(notifications.data.upgrade_plan)} upgrade notifications generated:"
                 )
-                pprint(plan.data.host_upgrade_plans)
+                pprint(notifications.data.upgrade_plan)
             else:
-                print("No host upgrade plans or updates available.")
+                print("No upgrade notifications available.")
                 sys.exit()
 
             # make sure there are entities to update
@@ -261,11 +230,13 @@ updates available."
                     update_spec.wait_in_sec_for_app_up = 60
                     plan = lcm_instance.update(async_req=False, body=update_spec)
                     update_task_ext_id = plan.data.ext_id
-                    update_duration = monitor_task_lcm(
+                    update_duration = utils.monitor_task(
                         task_ext_id=update_task_ext_id,
                         task_name="Update",
-                        client=lcm_client,
-                        poll_timeout=poll_timeout,
+                        pc_ip=utils.prism_config.host,
+                        username=utils.prism_config.username,
+                        password=utils.prism_config.password,
+                        poll_timeout=poll_timeout
                     )
                     print(f"Update duration: {update_duration}.")
                 else:
