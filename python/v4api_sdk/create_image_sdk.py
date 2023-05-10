@@ -157,7 +157,7 @@ not been included in this list."
             # grab the ext ID of the create image task
             # this method is a little cumbersome but allows task IDs from
             # different endpoints and APIs to be used with the
-            # monitor_task and monitor_task_lcm function(s)
+            # monitor_task function
             create_ext_id = (
                 image_create.metadata.links[0].href.split("/")[8].split(":")[1]
             )
