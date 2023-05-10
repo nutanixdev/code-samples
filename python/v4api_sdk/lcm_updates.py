@@ -228,8 +228,8 @@ updates available."
                     # WARNING: consider the implications of doing this in production
                     update_spec.skipped_precheck_flags = ["powerOffUvms"]
                     update_spec.wait_in_sec_for_app_up = 60
-                    plan = lcm_instance.update(async_req=False, body=update_spec)
-                    update_task_ext_id = plan.data.ext_id
+                    update = lcm_instance.update(async_req=False, body=update_spec)
+                    update_task_ext_id = update.data.ext_id
                     update_duration = utils.monitor_task(
                         task_ext_id=update_task_ext_id,
                         task_name="Update",
