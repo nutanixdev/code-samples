@@ -8,7 +8,7 @@ This example demonstrates use of the Nutanix `vmm` JS API library
 
 Example instructions are for a Linux or Mac OS X environment.
 
-- Install Node.js as per the [officlal documentation](https://nodejs.org/en/download/)
+- Install Node.js as per the [official documentation](https://nodejs.org/en/download/)
 - Add the [Nutanix vmm JS Client](https://www.npmjs.com/package/@nutanix-api/vmm-js-client) as a project dependency; for this demo we are using the `vmm` SDK as it provides access to Images APIs:
 
   ```
