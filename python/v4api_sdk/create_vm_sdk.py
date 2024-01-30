@@ -7,7 +7,7 @@ import argparse
 import sys
 import uuid
 from base64 import b64encode
-from pprint import pprint
+import pprint
 import urllib3
 
 import ntnx_vmm_py_client
@@ -18,6 +18,7 @@ import ntnx_storage_py_client
 
 from ntnx_vmm_py_client import Configuration as VMMConfiguration
 from ntnx_vmm_py_client import ApiClient as VMMClient
+import ntnx_vmm_py_client.models.vmm.v4.ahv.config as AhvVmConfig
 
 from ntnx_prism_py_client import Configuration as PrismConfiguration
 from ntnx_prism_py_client import ApiClient as PrismClient
@@ -60,10 +61,20 @@ def confirm_entity(api, client, entity_name: str, exclusions: list) -> str:
     # the correct entity
     found_entities = []
     for entity in entities.data:
-        if not entity.name in exclusions:
-            found_entities.append({"name": entity.name, "ext_id": entity.ext_id})
-    print(f"The following {entity_name}s ({len(entities.data)-offset}) were found.")
-    pprint(found_entities)
+        if entity_name in ["subnet", "image"]:
+            if entity.name not in exclusions:
+                found_entities.append({"name": entity.name, "ext_id": entity.ext_id})
+        else:
+            if entity["name"] not in exclusions:
+                found_entities.append({"name": entity["name"], "ext_id": entity["extId"]})
+    print(
+        f"The following {entity_name}s ({len(entities.data)-offset}) \
+ were found."
+    )
+
+    pp = pprint.PrettyPrinter(indent=4)
+    pp.pprint(found_entities)
+
     expected_entity_name = input(
         f"\nPlease enter the name of the selected {entity_name}: "
     ).lower()
@@ -72,7 +83,8 @@ def confirm_entity(api, client, entity_name: str, exclusions: list) -> str:
     ]
     if not matches:
         print(
-            f"No {entity_name} was found matching the name {expected_entity_name}.  Exiting."
+            f"No {entity_name} was found matching the name \
+ {expected_entity_name}.  Exiting."
         )
         sys.exit()
     # get the entity ext_id
@@ -119,12 +131,11 @@ password: ",
     if not cluster_password:
         while not cluster_password:
             print(
-                "Password cannot be empty.  \
-    Please enter a password or Ctrl-C/Ctrl-D to exit."
+                "Password cannot be empty.  Please enter a password \
+ or Ctrl-C/Ctrl-D to exit."
             )
             cluster_password = getpass.getpass(
-                prompt="Please enter your Prism Central \
-password: ",
+                prompt="Please enter your Prism Central password: ",
                 stream=None,
             )
 
@@ -181,149 +192,135 @@ password: ",
         ntnx_vmm_py_client.api.ImagesApi, vmm_client, "image", []
     )
 
-    # get the ext_id of the first storage container
+    # get the ext_id of the required storage container
+    # only request containers with name containing "default-container"
     print("Retrieving storage container list ...")
+    print(
+        'Note: Containers are filtered to match only those containing \
+the text "default-container-".'
+    )
     storage_instance = ntnx_storage_py_client.api.StorageContainerApi(
         api_client=storage_client
     )
-    container_list = storage_instance.get_all_storage_containers(async_req=False)
-    container_ext_id = container_list.data[0].container_ext_id
-    container_name = container_list.data[0].name
+    container_list = storage_instance.get_all_storage_containers(
+        async_req=False, _filter="contains(name, 'default-container-')"
+    )
+    container_ext_id = container_list.data[0]["containerExtId"]
+    container_name = container_list.data[0]["name"]
     print(
         f'VM will be created on storage container named "{container_name}" \
 with ext_id {container_ext_id}.\n'
     )
+    print(
+        f"VM will be created on container {container_name} with ext_id \
+ {container_ext_id}."
+    )
 
     # ask if the user wants to customise the VM using Cloud-Init
     # the Cloud-Init script is only relevant for CentOS Cloud based images
-    print("The Cloud-Init script used by this demo has been created for \
+    print(
+        "The Cloud-Init script used by this demo has been created for \
 CentOS images with Cloud-Init pre-installed.  To use your own \
 Cloud-Init userdata, modify userdata.yaml."
     )
-    customise_vm = utils.confirm(
-        "Customise VM with Cloud-Init?"
-    )
+    customise_vm = utils.confirm("Customise VM with Cloud-Init?")
 
     # set the name for the new VM
     # a UUID is appended to make sure each new VM is uniquely named
     vm_name = f"api_v4_sdk-{uuid.uuid4()}"
 
     # tell the VM which cluster it will live on
-    cluster_ref = (
-        ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.ClusterReference.ClusterReference()
-    )
+    cluster_ref = AhvVmConfig.ClusterReference.ClusterReference()
     cluster_ref.ext_id = cluster_ext_id
 
-    # set the network connection settings for the new VM
-    vm_nic = ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.Nic.Nic()
+    # create a new NIC for the VM
+    # https://developers.nutanix.com/api/v1/sdk/namespaces/main/vmm/versions/v4.0.a1/languages/python/ntnx_vmm_py_client.models.vmm.v4.ahv.config.Nic.html#module-ntnx_vmm_py_client.models.vmm.v4.ahv.config.Nic
+    vm_nic = AhvVmConfig.Nic.Nic(
+        # NIC backing info
+        backing_info=AhvVmConfig.EmulatedNic.EmulatedNic(
+            # NIC model
+            model=AhvVmConfig.EmulatedNicModel.EmulatedNicModel.E1000,
+            is_connected=True,
+        ),
+        # NIC network info including NIC type and subnet details
+        network_info=AhvVmConfig.NicNetworkInfo.NicNetworkInfo(
+            nic_type=AhvVmConfig.NicType.NicType.NORMAL_NIC,
+            # subnet details
+            subnet=AhvVmConfig.SubnetReference.SubnetReference(ext_id=subnet_ext_id),
+            # IPv4 config e.g. DHCP
+            ipv4_config=AhvVmConfig.Ipv4Config.Ipv4Config(should_assign_ip=True),
+        ),
+    )
 
-    # NIC model and initial connection status
-    vm_nic.backing_info = (
-        ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.EmulatedNic.EmulatedNic()
-    )
-    vm_nic.backing_info.is_connected = True
-    vm_nic.backing_info.model = (
-        ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.EmulatedNicModel.EmulatedNicModel.E1000
-    )
-
-    # NIC type
-    vm_nic.network_info = (
-        ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.NicNetworkInfo.NicNetworkInfo()
-    )
-    vm_nic.network_info.nic_type = (
-        ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.NicType.NicType.NORMAL_NIC
+    # create an empty CDROM device for the VM
+    # https://developers.nutanix.com/api/v1/sdk/namespaces/main/vmm/versions/v4.0.a1/languages/python/ntnx_vmm_py_client.models.vmm.v4.ahv.config.CdRom.html#module-ntnx_vmm_py_client.models.vmm.v4.ahv.config.CdRom
+    cdrom = AhvVmConfig.CdRom.CdRom(
+        # CDROM address including bus type and index
+        disk_address=AhvVmConfig.CdRomAddress.CdRomAddress(
+            bus_type=AhvVmConfig.CdRomBusType.CdRomBusType.IDE, index=0
+        )
     )
 
-    # the subnet the NIC will connect to
-    # uses the subnet ext_id obtained earlier
-    vm_nic.network_info.subnet = (
-        ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.SubnetReference.SubnetReference()
+    # create the boot disk for the VM, cloned from an existing on-cluster image
+    # https://developers.nutanix.com/api/v1/sdk/namespaces/main/vmm/versions/v4.0.a1/languages/python/ntnx_vmm_py_client.models.vmm.v4.ahv.config.Disk.html#module-ntnx_vmm_py_client.models.vmm.v4.ahv.config.Disk
+    cloned_disk = AhvVmConfig.Disk.Disk(
+        # backing info e.g. disk type, image info
+        backing_info=AhvVmConfig.VmDisk.VmDisk(
+            # source info for the cloned disk
+            data_source=AhvVmConfig.DataSource.DataSource(
+                # clone the disk from an existing image
+                reference=AhvVmConfig.ImageReference.ImageReference(
+                    image_ext_id=image_ext_id
+                )
+            )
+        ),
+        disk_address=AhvVmConfig.DiskAddress.DiskAddress(
+            bus_type=AhvVmConfig.DiskBusType.DiskBusType.SCSI, index=0
+        ),
     )
-    vm_nic.network_info.subnet.ext_id = subnet_ext_id
 
-    # create a CDROM device for the new VM
-    # optional but useful
-    cdrom = ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.Cdrom.Cdrom()
-    cdrom.disk_address = (
-        ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.CdromAddress.CdromAddress()
+    # create an empty 40GB disk attached to the VM
+    empty_disk = AhvVmConfig.Disk.Disk(
+        backing_info=AhvVmConfig.VmDisk.VmDisk(
+            disk_size_bytes=42949672960,
+            storage_container=AhvVmConfig.VmDiskContainerReference.VmDiskContainerReference(
+                ext_id=container_ext_id
+            ),
+        ),
+        disk_address=AhvVmConfig.DiskAddress.DiskAddress(
+            bus_type=AhvVmConfig.DiskBusType.DiskBusType.SCSI, index=1
+        ),
     )
-    cdrom.disk_address.bus_type = (
-        ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.CdromBusType.CdromBusType.IDE
-    )
-    cdrom.disk_address.index = 0
-    cloned_disk = ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.Disk.Disk()
-    cloned_disk.backing_info = ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.VmDisk.VmDisk()
-    cloned_disk.backing_info.data_source = (
-        ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.DataSource.DataSource()
-    )
-    cloned_disk.backing_info.data_source.reference = (
-        ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.ImageReference.ImageReference()
-    )
-    cloned_disk.backing_info.data_source.reference.image_ext_id = image_ext_id
-    cloned_disk.disk_address = (
-        ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.DiskAddress.DiskAddress()
-    )
-    cloned_disk.disk_address.bus_type = (
-        ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.DiskBusType.DiskBusType.SCSI
-    )
-    cloned_disk.disk_address.index = 0
-    cloned_disk.scsi_passthrough_enabled = True
 
-    # the second SCSI disk is empty, 40GB in size
-    empty_disk = ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.Disk.Disk()
-    empty_disk.backing_info = ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.VmDisk.VmDisk()
-    empty_disk.backing_info.disk_size_bytes = 42949672960
-    empty_disk.backing_info.storage_container = (
-        ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.VmDiskContainerReference.VmDiskContainerReference()
-    )
-    empty_disk.backing_info.storage_container.ext_id = container_ext_id
-    empty_disk.disk_address = (
-        ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.DiskAddress.DiskAddress()
-    )
-    empty_disk.disk_address.bus_type = (
-        ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.DiskBusType.DiskBusType.SCSI
-    )
-    empty_disk.disk_address.index = 1
+    # prepare the VM creation userdata
+    with open("userdata.yaml", "r", encoding="ascii") as userdata_file:
+        userdata_encoded = b64encode(
+            bytes(userdata_file.read(), encoding="ascii")
+        ).decode("ascii")
 
     # create the instance of the VM object
     # and use all the settings created up to this point
-    new_vm = ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.Vm.Vm()
-    new_vm.name = vm_name
-    new_vm.description = "VM created using Nutanix v4 Python SDK"
-    new_vm.num_sockets = 1
-    new_vm.num_cores_per_socket = 1
-    new_vm.branding_enabled = True
-    new_vm.memory_size_bytes = 8589934592
-    new_vm.cluster = cluster_ref
-    new_vm.nics = [vm_nic]
-    new_vm.cdroms = [cdrom]
-    new_vm.disks = [cloned_disk, empty_disk]
-
-    # did the user say Yes to customising the VM?
-    if customise_vm:
-        print("VM will be customised with Cloud-Init.")
-        new_vm.guest_customization = (
-            ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.GuestCustomization.GuestCustomization()
+    # https://developers.nutanix.com/api/v1/sdk/namespaces/main/vmm/versions/v4.0.a1/languages/python/ntnx_vmm_py_client.models.vmm.v4.ahv.config.Vm.html#module-ntnx_vmm_py_client.models.vmm.v4.ahv.config.Vm
+    new_vm = AhvVmConfig.Vm.Vm(
+        name=vm_name,
+        description="VM created using Nutanix v4 Python SDK",
+        num_sockets=1,
+        num_cores_per_socket=1,
+        is_branding_enabled=True,
+        memory_size_bytes=8589934592,
+        cluster=cluster_ref,
+        nics=[vm_nic],
+        cd_roms=[cdrom],
+        disks=[cloned_disk, empty_disk],
+        guest_customization=AhvVmConfig.GuestCustomizationParams.GuestCustomizationParams(
+            config=AhvVmConfig.CloudInit.CloudInit(
+                cloud_init_script=AhvVmConfig.Userdata.Userdata(value=userdata_encoded),
+                datasource_type=AhvVmConfig.CloudInitDataSourceType.CloudInitDataSourceType.CONFIG_DRIVE_V2,
+            )
         )
-        new_vm.guest_customization.config = (
-            ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.CloudInit.CloudInit()
-        )
-        new_vm.guest_customization.config.cloud_init_script = (
-            ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.Userdata.Userdata()
-        )
-        new_vm.guest_customization.config.datasource_type = (
-            ntnx_vmm_py_client.Ntnx.vmm.v4.ahv.config.CloudInitDataSourceType.CloudInitDataSourceType.CONFIG_DRIVE_V2
-        )
-
-        with open("userdata.yaml", "r", encoding="ascii") as userdata_file:
-            userdata_encoded = b64encode(
-                bytes(userdata_file.read(), encoding="ascii")
-            ).decode("ascii")
-
-        new_vm.guest_customization.config.cloud_init_script.value = userdata_encoded
-
-    else:
-        print("VM will not be customised with Cloud-Init.")
+        if customise_vm
+        else None,
+    )
 
     vmm_instance = ntnx_vmm_py_client.api.VmApi(api_client=vmm_client)
 
@@ -338,7 +335,7 @@ Cloud-Init userdata, modify userdata.yaml."
         username=username,
         password=cluster_password,
         poll_timeout=1,
-        prefix=""
+        prefix="",
     )
     prism_instance = ntnx_prism_py_client.api.TaskApi(api_client=prism_client)
     new_vm_ext_id = prism_instance.task_get(task_extid).data.entities_affected[0].ext_id

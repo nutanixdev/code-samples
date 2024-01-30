@@ -1,6 +1,0 @@
-{
-    "pc_ip": "prism_central_ip_or_fqdn",
-    "pc_username": "prism_central_username",
-    "pc_password": "prism_central_password",
-    "cluster_name": "test_cluster_name"
-}

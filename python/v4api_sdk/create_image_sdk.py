@@ -88,9 +88,10 @@ password: ",
 
         # do some verification and make sure the user creates the image on the correct cluster
         found_clusters = []
+
         for cluster in cluster_list.data:
-            if not cluster.name == "Unnamed":
-                found_clusters.append({"name": cluster.name, "ext_id": cluster.ext_id})
+            if not cluster["name"] == "Unnamed":
+                found_clusters.append({"name": cluster["name"], "ext_id": cluster["extId"]})
         print(
             f"The following clusters ({len(cluster_list.data)-1}) were found, not including Prism Central."
         )
@@ -136,16 +137,16 @@ not been included in this list."
         unique_id = uuid.uuid1()
 
         # setup new image properties
-        new_image = ntnx_vmm_py_client.Ntnx.vmm.v4.images.Image.Image()
-        new_image.name = f"image_{unique_id}"
-        new_image.desc = "Image created using Nutanix v4 Python SDKs"
+        new_image = ntnx_vmm_py_client.models.vmm.v4.images.Image.Image()
+        new_image.name = f"centos7_2211_generic_cloud_{unique_id}"
+        new_image.desc = "CentOS 7 Generic Cloud 2211"
         new_image.type = "DISK_IMAGE"
-        image_source = ntnx_vmm_py_client.Ntnx.vmm.v4.images.UrlSource.UrlSource()
-        image_source.url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-2003.qcow2"
+        image_source = ntnx_vmm_py_client.models.vmm.v4.images.UrlSource.UrlSource()
+        image_source.url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-2211.qcow2"
         image_source.allow_insecure = False
         new_image.source = image_source
         image_cluster = (
-            ntnx_vmm_py_client.Ntnx.vmm.v4.images.ClusterReference.ClusterReference()
+            ntnx_vmm_py_client.models.vmm.v4.images.ClusterReference.ClusterReference()
         )
         image_cluster.ext_id = cluster_ext_id
         new_image.initial_cluster_locations = [image_cluster]

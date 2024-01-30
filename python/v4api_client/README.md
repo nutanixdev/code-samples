@@ -2,6 +2,10 @@
 
 Code sample to demonstrate use of the new Nutanix v4 APIs via Python client.
 
+## Recommendations
+
+These demos are specifically for environments where the use of Nutanix v4 SDKs is not possible.  Where possible, it is recommended to use and implement the Nutanix v4 SDKs.
+
 ## Usage
 
 - Create and activate a Python virtual environment:

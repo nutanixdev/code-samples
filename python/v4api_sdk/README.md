@@ -1,6 +1,12 @@
-# Nutanix v4 SDK Sample Script
+# Nutanix v4 SDK Sample Scripts
 
 Code sample to demonstrate use of the new Nutanix v4 APIs via Python SDK.
+
+## Requirements
+
+- Python 3.6, 3.7 or 3.8 are officially supported
+- Nutanix Prism Central 2023.3 or later
+- Nutanix AOS 6.7 or later
 
 ## Usage
 

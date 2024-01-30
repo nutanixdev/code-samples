@@ -5,16 +5,28 @@ v4 SDK code samples
 
 import time
 import urllib3
+from dataclasses import dataclass
 from timeit import default_timer as timer
 
 import ntnx_prism_py_client
 from ntnx_prism_py_client import ApiClient as PrismClient
 from ntnx_prism_py_client import Configuration as PrismConfiguration
 
-from ntnx_prism_py_client.Ntnx.prism.v4.config.TaskGetResponse import (
+from ntnx_prism_py_client.models.prism.v4.config.TaskGetResponse import (
     TaskGetResponse
 )
 
+
+@dataclass
+class Config:
+    """
+    dataclass to hold configuration for each script run
+    nice and modular
+    """
+
+    pc_ip: str
+    pc_username: str
+    pc_password: str
 
 class Utils:
     """

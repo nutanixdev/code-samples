@@ -101,7 +101,7 @@ environment configuration."
             print("Starting LCM inventory ...")
             inventory = lcm_instance.inventory(async_req=False)
             # grab the unique identifier for the LCM inventory task
-            inventory_task_ext_id = inventory.data.ext_id
+            inventory_task_ext_id = inventory.data["extId"]
             inventory_duration = utils.monitor_task(
                 task_ext_id=inventory_task_ext_id,
                 task_name="Inventory",
@@ -113,32 +113,6 @@ environment configuration."
             print(f"Inventory duration: {inventory_duration}.")
         else:
             print("LCM Inventory skipped.")
-
-        run_precheck = utils.confirm(
-            "Run precheck?  This can take some time, depending on environment \
-configuration. Note Inventory may need to be run before LCM Precheck \
-can be completed."
-        )
-        if run_precheck:
-            # kick off LCM pre-checks
-            # note inventory will do this for you, unless specified otherwise
-            precheck_spec = PrecheckSpec()
-            precheck_spec.entity_update_specs = []
-            lcm_instance = ntnx_lcm_py_client.api.PrecheckApi(api_client=lcm_client)
-            print("Starting LCM pre-checks ...")
-            precheck = lcm_instance.precheck(async_req=False, body=precheck_spec)
-            precheck_task_ext_id = precheck.data.ext_id
-            precheck_duration = utils.monitor_task(
-                task_ext_id=precheck_task_ext_id,
-                task_name="Precheck",
-                pc_ip=utils.prism_config.host,
-                username=utils.prism_config.username,
-                password=utils.prism_config.password,
-                poll_timeout=poll_timeout
-            )
-            print(f"Precheck duration: {precheck_duration}.")
-        else:
-            print("Precheck skipped.")
 
         # gather a list of supported entities
         # this will be used to show human-readable update info shortly
