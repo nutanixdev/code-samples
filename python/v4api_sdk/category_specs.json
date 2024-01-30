@@ -1,0 +1,17 @@
+[
+	{
+		"name": "category_name1",
+		"value": "category_value",
+		"description": "category created with v4 Prism SDK"
+	},
+	{
+		"name": "category_name2",
+		"value": "category_value",
+		"description": "category created with v4 Prism SDK"
+	},
+	{
+		"name": "category_name2",
+		"value": "category_value2",
+		"description": "category created with v4 Prism SDK"
+	}
+]

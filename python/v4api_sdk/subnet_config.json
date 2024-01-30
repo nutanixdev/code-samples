@@ -1,0 +1,42 @@
+{
+	"name": "UVM-Full-Test",
+	"description": "User VMS only, no CVMs or Nutanix Products",
+	"subnet_type": "VLAN",
+	"network_id": 409,
+	"virtual_switch_reference": "ef6defb7-bfb2-4c08-9ac7-e2cf195077ec",
+	"is_external": false,
+	"is_advanced_networking": true,
+	"subnet_prefix": 25,
+	"subnet_ip_address": "10.38.141.0",
+	"subnet_ip_prefix": 32,
+	"dhcp": {
+		"dns_servers": [
+			{
+				"prefix_length": 32,
+				"ip_address": "10.42.194.10"
+			},
+			{
+				"prefix_length": 32,
+				"ip_address": "10.42.196.10"
+		        }
+		],
+	        "dhcp_server": {
+			"prefix_length": 32,
+			"ip_address": "10.38.141.126"
+		},
+		"dhcp_pool": {
+			"start_ip": {
+				"prefix_length": 32,
+				"ip_address": "10.38.141.20"
+			},
+			"end_ip": {
+				"prefix_length": 32,
+				"ip_address": "10.38.141.125"
+			}
+		}
+	},
+	"gateway": {
+		"prefix_length": 32,
+		"ip_address": "10.38.141.1"
+	}
+}

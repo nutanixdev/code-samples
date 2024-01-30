@@ -1,5 +1,5 @@
 {
-    "cluster_ip": "10.0.0.0",
+    "cluster_ip": "10.0.0.1",
     "username": "admin",
     "batch_details":{
         "action_on_failure": "CONTINUE",
