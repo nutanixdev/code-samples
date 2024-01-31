@@ -34,4 +34,3 @@ Example instructions are for a Linux or Mac OS X environment.
 ## Screenshot
 
 ![Example script execution](./screenshot.png "Example script execution")
-
