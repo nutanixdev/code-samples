@@ -1,13 +1,14 @@
 https://www.github.com/nutanixdev/code-samples: Depencencies and licenses
 -------------------------------------------------------------------------
 
-jq: MIT license
+jq: MIT license, https://github.com/jqlang/jq?tab=License-1-ov-file#
 curl: Custom MIT license, https://curl.se/docs/copyright.html
-requests: Apache 2.0 license
-urllib3: MIT license
+requests: Apache 2.0 license, https://github.com/psf/requests/blob/main/LICENSE
+urllib3: MIT license, https://github.com/urllib3/urllib3/blob/main/LICENSE.txt
 argparse: Python Foundation Software License, https://docs.python.org/3/license.html#:~:text=Python%20software%20and%20documentation%20are,Python%20is%20under%20different%20licenses
 xlsxwriter: BSD license, https://xlsxwriter.readthedocs.io/license.html
 boto3: Apache 2.0 license, https://github.com/boto/boto3/blob/develop/LICENSE
+ruff: MIT license, https://github.com/astral-sh/ruff/blob/main/LICENSE
 ntnx_clustermgmt_py_client: Nutanix Proprietary License, https://developers.nutanix.com/license
 ntnx_prism_py_client: Nutanix Proprietary License, https://developers.nutanix.com/license
 ntnx_networking_py_client: Nutanix Proprietary License, https://developers.nutanix.com/license
@@ -21,6 +22,7 @@ ntnx_aiops_py_client: Nutanix Proprietary License, https://developers.nutanix.co
 golang: BSD-3 license, https://github.com/golang/go/blob/master/LICENSE
 golang gjson: MIT license, https://github.com/tidwall/gjson/blob/master/LICENSE
 NewtonSoft.Json: MIT license, https://github.com/JamesNK/Newtonsoft.Json/blob/master/LICENSE.md
+ESLint: MIT license, https://github.com/eslint/eslint/blob/main/LICENSE
 
 MIT License
 -----------

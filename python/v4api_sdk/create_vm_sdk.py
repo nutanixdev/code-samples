@@ -239,7 +239,7 @@ Cloud-Init userdata, modify userdata.yaml."
         # NIC backing info
         backing_info=AhvVmConfig.EmulatedNic.EmulatedNic(
             # NIC model
-            model=AhvVmConfig.EmulatedNicModel.EmulatedNicModel.E1000,
+            model=AhvVmConfig.EmulatedNicModel.EmulatedNicModel.VIRTIO,
             is_connected=True,
         ),
         # NIC network info including NIC type and subnet details
