@@ -3,7 +3,7 @@
 	"description": "User VMS only, no CVMs or Nutanix Products",
 	"subnet_type": "VLAN",
 	"network_id": 409,
-	"virtual_switch_reference": "ef6defb7-bfb2-4c08-9ac7-e2cf195077ec",
+	"virtual_switch_reference": "6b371904-bcb5-44cc-a6a7-b954fd822e18",
 	"is_external": false,
 	"is_advanced_networking": true,
 	"subnet_prefix": 25,

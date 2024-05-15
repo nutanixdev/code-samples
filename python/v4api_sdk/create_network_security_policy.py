@@ -1,7 +1,7 @@
 """
 Use the Nutanix v4 Python SDK to create a Nutanix Flow
 Network Security Policy
-Requires Prism Central pc.2023.3 or later and AOS 6.7 or later
+Requires Prism Central pc.2024.1 or later and AOS 6.8 or later
 """
 
 # disable pylint checks that don't matter for this demo
@@ -43,7 +43,7 @@ def confirm_entity(api, client, entity_name: str) -> str:
 
     try:
         if entity_name == "category":
-            entities = instance.get_all_categories(async_req=False)
+            entities = instance.list_categories(async_req=False)
         else:
             print(f"{entity_name} is not supported.  Exiting.")
             sys.exit()
@@ -198,12 +198,12 @@ continue."
                 name="v4 SDK Network Security Policy",
                 description="Network security policy created with the \
 Nutanix v4 Flow Management SDKs; for demo purposes only!",
-                type=v4MicrosegConfig.PolicyType.PolicyType.ISOLATION,
-                state=v4MicrosegConfig.PolicyState.PolicyState.MONITOR,
+                type=v4MicrosegConfig.SecurityPolicyType.SecurityPolicyType.ISOLATION,
+                state=v4MicrosegConfig.SecurityPolicyState.SecurityPolicyState.MONITOR,
                 rules=[
                     v4MicrosegConfig.NetworkSecurityPolicyRule.NetworkSecurityPolicyRule(
                         description="First network security policy rule",
-                        spec=v4MicrosegConfig.NSPTwoEnvIsolationRuleSpec.NSPTwoEnvIsolationRuleSpec(
+                        spec=v4MicrosegConfig.TwoEnvIsolationRuleSpec.TwoEnvIsolationRuleSpec(
                             first_isolation_group=[first_group_ext_id],
                             second_isolation_group=[second_group_ext_id],
                         ),
@@ -251,9 +251,9 @@ Security changes in your environment."
             poll_timeout=1,
             prefix="",
         )
-        prism_instance = ntnx_prism_py_client.api.TaskApi(api_client=prism_client)
+        prism_instance = ntnx_prism_py_client.api.TasksApi(api_client=prism_client)
         new_policy_ext_id = (
-            prism_instance.task_get(task_extid).data.entities_affected[0].ext_id
+            prism_instance.get_task_by_id(task_extid).data.entities_affected[0].ext_id
         )
         print(
             f"New Network Security Policy named {new_policy.name} has been \

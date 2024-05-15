@@ -1,6 +1,6 @@
 """
 Use the Nutanix v4 Python SDK to create a Prism Central managed subnet
-Requires Prism Central pc.2023.3 or later and AOS 6.7 or later
+Requires Prism Central pc.2024.1 or later and AOS 6.8 or later
 """
 
 # disable pylint checks that don't matter for this demo
@@ -55,10 +55,10 @@ def confirm_entity(api, client, entity_name: str, exclusions: list) -> str:
 
     try:
         if entity_name == "cluster":
-            entities = instance.get_clusters(async_req=False)
+            entities = instance.list_clusters(async_req=False)
             offset = 1
         elif entity_name == "image":
-            entities = instance.get_images_list(async_req=False)
+            entities = instance.list_images(async_req=False)
         elif entity_name == "subnet":
             entities = instance.list_subnets(async_req=False)
         else:
@@ -76,8 +76,8 @@ def confirm_entity(api, client, entity_name: str, exclusions: list) -> str:
     # the correct entity
     found_entities = []
     for entity in entities.data:
-        if entity["name"] not in exclusions:
-            found_entities.append({"name": entity["name"], "ext_id": entity["extId"]})
+        if entity.name not in exclusions:
+            found_entities.append({"name": entity.name, "ext_id": entity.ext_id})
     print(f"The following {entity_name}s ({len(entities.data)-offset}) were found.")
     pprint(found_entities)
     expected_entity_name = input(
@@ -192,7 +192,7 @@ password: ",
     ask the user to confirm the cluster that will own the subnet
     """
     cluster_ext_id = confirm_entity(
-        ntnx_clustermgmt_py_client.api.ClusterApi,
+        ntnx_clustermgmt_py_client.api.ClustersApi,
         cluster_client,
         "cluster",
         ["Unnamed"],
@@ -318,13 +318,8 @@ Check the format then try again."
             poll_timeout=1,
             prefix="",
         )
-        prism_instance = ntnx_prism_py_client.api.TaskApi(api_client=prism_client)
-        new_subnet_ext_id = (
-            prism_instance.task_get(task_extid).data.entities_affected[0].ext_id
-        )
         print(
-            f"New Subnet named {config_json['name']} has been created with \
-ext_id {new_subnet_ext_id}.\n"
+            f"New Subnet named {config_json['name']} has been created.\n"
         )
     else:
         print("Subnet creation cancelled.")

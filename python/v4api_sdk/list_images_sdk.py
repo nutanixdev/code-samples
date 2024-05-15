@@ -66,7 +66,7 @@ if __name__ == "__main__":
         api_client = VMMClient(configuration=config)
         api_instance = ntnx_vmm_py_client.api.ImagesApi(api_client=api_client)
         # without filters
-        images_list_no_filters = api_instance.get_images_list()
+        images_list_no_filters = api_instance.list_images()
         if images_list_no_filters.metadata.total_available_results > 0:
             print(
                 f"Images found without any filters: {len(images_list_no_filters.data)}"
@@ -74,7 +74,7 @@ if __name__ == "__main__":
         else:
             print("No images found.")
         # with filters
-        images_list_with_filter = api_instance.get_images_list(
+        images_list_with_filter = api_instance.list_images(
             _filter="startswith(name, 'U')"
         )
         if images_list_with_filter.metadata.total_available_results > 0:
@@ -83,7 +83,7 @@ if __name__ == "__main__":
             )
         else:
             print('No images found with name starting with "U".')
-        images_list_matches = api_instance.get_images_list(
+        images_list_matches = api_instance.list_images(
             _filter="name in ('scenario01')"
         )
         if images_list_matches.metadata.total_available_results > 0:
@@ -91,14 +91,14 @@ if __name__ == "__main__":
         else:
             print("No images found matching this filter list.")
         # using _orderby
-        images_list_orderby_name = api_instance.get_images_list(_orderby="name asc")
+        images_list_orderby_name = api_instance.list_images(_orderby="name asc")
         if images_list_orderby_name.metadata.total_available_results > 0:
             print(f"\nImages found in PC instance, ordered by name, ascending:")
             for image in images_list_orderby_name.data:
                 print(f"Image name: {image.name} ({image.ext_id})")
         else:
             print("No images found while using order by name filter.")
-        images_list_orderby_size = api_instance.get_images_list(
+        images_list_orderby_size = api_instance.list_images(
             _orderby="sizeBytes desc"
         )
         if images_list_orderby_size.metadata.total_available_results > 0:

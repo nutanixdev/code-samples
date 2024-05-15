@@ -1,6 +1,8 @@
 """
 Simple module to allow function re-use across Nutanix
 v4 SDK code samples
+
+Requires Prism Central 2024.1 or later, AOS 6.8 or later
 """
 
 import time
@@ -11,10 +13,6 @@ from timeit import default_timer as timer
 import ntnx_prism_py_client
 from ntnx_prism_py_client import ApiClient as PrismClient
 from ntnx_prism_py_client import Configuration as PrismConfiguration
-
-from ntnx_prism_py_client.models.prism.v4.config.TaskGetResponse import (
-    TaskGetResponse
-)
 
 
 @dataclass
@@ -50,16 +48,16 @@ class Utils:
         self.prism_client.add_default_header(
             header_name="Accept-Encoding", header_value="gzip, deflate, br"
         )
-        self.prism_instance = ntnx_prism_py_client.api.TaskApi(
+        self.prism_instance = ntnx_prism_py_client.api.TasksApi(
             api_client=self.prism_client
         )
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    def get_task(self, ext_id: str) -> TaskGetResponse:
+    def get_task(self, ext_id: str):
         """
         method used to get details of a specified task
         """
-        task = self.prism_instance.task_get(f"ZXJnb24=:{ext_id}")
+        task = self.prism_instance.get_task_by_id(f"{ext_id}")
         if task:
             return task
         return None
@@ -73,7 +71,7 @@ class Utils:
         return yes_no == "yes"
 
     def monitor_task(
-        self, task_ext_id, task_name, pc_ip, username, password, poll_timeout, prefix = "ZXJnb24=:"
+        self, task_ext_id, task_name, pc_ip, username, password, poll_timeout, prefix = ""
     ):
         """
         method used to monitor Prism Central tasks
@@ -92,8 +90,8 @@ class Utils:
         prism_client.add_default_header(
             header_name="Accept-Encoding", header_value="gzip, deflate, br"
         )
-        prism_instance = ntnx_prism_py_client.api.TaskApi(api_client=prism_client)
-        task = prism_instance.task_get(f"{prefix}{task_ext_id}")
+        prism_instance = ntnx_prism_py_client.api.TasksApi(api_client=prism_client)
+        task = prism_instance.get_task_by_id(f"{prefix}{task_ext_id}")
         units = "second" if poll_timeout == 1 else "seconds"
         print(
             f"{task_name} running, checking progress every {poll_timeout} {units} ...",
@@ -106,7 +104,7 @@ class Utils:
                 print(" finished.")
                 break
             time.sleep(int(poll_timeout))
-            task = prism_instance.task_get(f"{prefix}{task_ext_id}")
+            task = prism_instance.get_task_by_id(f"{prefix}{task_ext_id}")
         end = timer()
         elapsed_time = end - start
         if elapsed_time <= 60:

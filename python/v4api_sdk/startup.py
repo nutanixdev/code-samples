@@ -9,10 +9,10 @@ from dataclasses import dataclass
 
 from tme import Utils
 
-import ntnx_lcm_py_client
-from ntnx_lcm_py_client import ApiClient as LCMClient
-from ntnx_lcm_py_client import Configuration as LCMConfiguration
-from ntnx_lcm_py_client.rest import ApiException as LCMException
+import ntnx_lifecycle_py_client
+from ntnx_lifecycle_py_client import ApiClient as LCMClient
+from ntnx_lifecycle_py_client import Configuration as LCMConfiguration
+from ntnx_lifecycle_py_client.rest import ApiException as LCMException
 
 import ntnx_prism_py_client
 from ntnx_prism_py_client import ApiClient as PrismClient
@@ -32,15 +32,12 @@ from ntnx_microseg_py_client import ApiClient as MicrosegClient
 from ntnx_microseg_py_client import Configuration as MicrosegConfiguration
 from ntnx_microseg_py_client.rest import ApiException as MicrosegException
 
-from ntnx_lcm_py_client.Ntnx.lcm.v4.common.PrecheckSpec import PrecheckSpec
-from ntnx_lcm_py_client.Ntnx.lcm.v4.common.EntityUpdateSpec import EntityUpdateSpec
-from ntnx_lcm_py_client.Ntnx.lcm.v4.common.EntityUpdateSpecs import EntityUpdateSpecs
-from ntnx_lcm_py_client.Ntnx.lcm.v4.resources.RecommendationSpec import (
-    RecommendationSpec,
-)
-from ntnx_lcm_py_client.Ntnx.lcm.v4.common.UpdateSpec import UpdateSpec
+from ntnx_lifecycle_py_client.models.lifecycle.v4.common.PrechecksSpec import PrechecksSpec
+from ntnx_lifecycle_py_client.models.lifecycle.v4.common.EntityUpdateSpec import EntityUpdateSpec
+from ntnx_lifecycle_py_client.models.lifecycle.v4.resources.RecommendationSpec import RecommendationSpec
+from ntnx_lifecycle_py_client.models.lifecycle.v4.common.UpgradeSpec import UpgradeSpec
 
-from ntnx_vmm_py_client.models.vmm.v4.images import Image
+from ntnx_vmm_py_client.models.vmm.v4.content import Image
 
 @dataclass
 class Config:
@@ -107,14 +104,14 @@ def main():
     rec_spec = RecommendationSpec()
     rec_spec.entity_types = ["software"]
 
-    lcm_instance = ntnx_lcm_py_client.api.RecommendationsApi(api_client=lcm_client)
+    lcm_instance = ntnx_lifecycle_py_client.api.RecommendationsApi(api_client=lcm_client)
 
-    cluster_instance = ntnx_clustermgmt_py_client.api.ClusterApi(api_client=cluster_client)
+    cluster_instance = ntnx_clustermgmt_py_client.api.ClustersApi(api_client=cluster_client)
     if live:
         try:
-            cluster_list = cluster_instance.get_clusters(async_req=False)
-            cluster = [ x for x in cluster_list.data if x["name"] == user_config.cluster_name ]
-            cluster_extid = cluster[0]["extId"]
+            cluster_list = cluster_instance.list_clusters(async_req=False)
+            cluster = [ x for x in cluster_list.data if x.name == user_config.cluster_name ]
+            cluster_extid = cluster[0].ext_id
         except ntnx_clustermgmt_py_client.rest.ApiException as ex:
             print(type(ex))
             sys.exit()
@@ -126,15 +123,15 @@ def main():
 
     unique_id = uuid.uuid1()
 
-    new_image = ntnx_vmm_py_client.models.vmm.v4.images.Image.Image()
+    new_image = ntnx_vmm_py_client.models.vmm.v4.content.Image.Image()
     new_image.name = f"image_{unique_id}"
     new_image.desc = "no desc"
     new_image.type = "DISK_IMAGE"
-    image_source = ntnx_vmm_py_client.models.vmm.v4.images.UrlSource.UrlSource()
+    image_source = ntnx_vmm_py_client.models.vmm.v4.content.UrlSource.UrlSource()
     image_source.url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-2003.qcow2"
     image_source.allow_insecure = False
     new_image.source = image_source
-    image_cluster = ntnx_vmm_py_client.models.vmm.v4.images.ClusterReference.ClusterReference()
+    image_cluster = ntnx_vmm_py_client.models.vmm.v4.ahv.config.ClusterReference.ClusterReference()
     image_cluster.ext_id = cluster_extid
     new_image.initial_cluster_locations = [image_cluster]
 
