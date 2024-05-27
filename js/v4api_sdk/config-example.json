@@ -1,5 +1,6 @@
 {
   "pc_ip": "<prism_central_ip_or_fqdn_here>",
+  "pc_port": "9440",
   "username": "<prism_central_username_here>",
   "password": "<prism_central_password_here>",
   "debug": false

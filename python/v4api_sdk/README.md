@@ -1,12 +1,12 @@
 # Nutanix v4 SDK Sample Scripts
 
-Code sample to demonstrate use of the new Nutanix v4 APIs via Python SDK.
+Code samples to demonstrate use of the new Nutanix v4 APIs via Python SDK.
 
 ## Requirements
 
-- Python 3.6, 3.7 or 3.8 are officially supported
-- Nutanix Prism Central 2023.3 or later
-- Nutanix AOS 6.7 or later
+- Python 3.6, 3.7, 3.8 and 3.9 are officially supported
+- Nutanix Prism Central 2024.1 or later
+- Nutanix AOS 6.8 or later
 
 ## Usage
 
@@ -49,3 +49,35 @@ To use these optional files, continue below:
   python -i startup.py
   ```
 - If the script returns no errors, initialisation was successful.
+
+## Screenshots
+
+### List Images
+
+![List Images](./screenshot_list_images.png)
+
+### Create Image
+
+![Create image](./screenshot_create_image.png)
+
+### Batch Operations
+
+![Batch Operations - Create](./screenshot_batch_create.png)
+![Batch Operations - Modify](./screenshot_batch_modify.png)
+
+### Create Network Security Policy
+
+![Create Network Security Policy](./screenshot_create_nsp1.png)
+![Create Network Security Policy](./screenshot_create_nsp2.png)
+
+### Create Categories
+
+![Create Categories](./screenshot_create_cats.png)
+
+### Create Networking Subnet
+
+![Create Networking Subnet](./screenshot_create_subnet.png)
+
+### Create Virtual Machine
+
+![Create Virtual Machine](./screenshot_create_vm.png)

@@ -1,7 +1,7 @@
 """
 Use the Nutanix v4 Python SDK to create a collection of
 Prism Central categories
-Requires Prism Central pc.2023.3 or later and AOS 6.7 or later
+Requires Prism Central pc.2024.1 or later and AOS 6.8 or later
 """
 
 # disable pylint checks that don't matter for this demo

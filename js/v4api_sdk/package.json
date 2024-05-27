@@ -1,16 +1,5 @@
 {
   "dependencies": {
-    "@nutanix-api/clustermgmt-js-client": "^4.0.1-beta.1",
-    "@nutanix-api/vmm-js-client": "^4.0.1-alpha.1",
-    "json-loader": "^0.5.7"
-  },
-  "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.39.0",
-    "eslint": "^8.24.0",
-    "eslint-config-standard-with-typescript": "^23.0.0",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-n": "^15.3.0",
-    "eslint-plugin-promise": "^6.0.1",
-    "typescript": "^4.8.4"
+    "@nutanix-api/clustermgmt-js-client": "^4.0.1-beta.2"
   }
 }

@@ -2,3 +2,12 @@ venv/
 __pycache__/
 startup.json
 *.log
+rc_setup.zsh
+dist/
+full_image_update_etag.py
+full_image_update_requests.py
+.ruff_cache/
+build/
+dist/
+*.egg-info/
+eslint.config.mjs

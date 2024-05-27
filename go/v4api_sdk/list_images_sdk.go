@@ -7,7 +7,7 @@
 //
 // Requirements:
 //
-// - Prism Central pc.2022.6 or later
+// - Prism Central pc.2024.1 or later and AOS 6.8 or later
 
 package main
 
@@ -18,7 +18,7 @@ import (
     "reflect"
     "github.com/nutanix/ntnx-api-golang-clients/vmm-go-client/v4/api"
     "github.com/nutanix/ntnx-api-golang-clients/vmm-go-client/v4/client"
-    v4sdkimages "github.com/nutanix/ntnx-api-golang-clients/vmm-go-client/v4/models/vmm/v4/images"
+    v4sdkimages "github.com/nutanix/ntnx-api-golang-clients/vmm-go-client/v4/models/vmm/v4/content"
     v4sdkerror "github.com/nutanix/ntnx-api-golang-clients/vmm-go-client/v4/models/vmm/v4/error"
     "golang.org/x/term"
 )
@@ -77,9 +77,11 @@ func main() {
     limit := 20
     filter := ""
     orderBy := ""
+    // select is reserved
+    _select := ""
     
     // attempt to get the list of images
-    response, err := ImagesApiInstance.GetImagesList(&page, &limit, &filter, &orderBy)
+    response, err := ImagesApiInstance.ListImages(&page, &limit, &filter, &orderBy, &_select)
     // these errors, if present, can include authentication and connection/timeout issues
     if err != nil {
          fmt.Println("Request failed:")
@@ -113,8 +115,9 @@ func main() {
 
     // if a list of images was found, iterate over and display info about them
     for _, value := range resultImages {
-        // show info about the image's name and size in bytes
-        fmt.Printf("Image found with name \"%v\", size bytes %v\n", *value.Name, *value.SizeBytes)
+        // show the image's name
+        fmt.Printf("Image found with name \"%v\"\n", *value.Name)
+
     }
 
     fmt.Println("Done!")

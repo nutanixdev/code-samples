@@ -57,7 +57,7 @@ try:
     ).decode("ascii")
     auth_header = f"Basic {encoded_credentials}"
     # setup the URL that will be used for the API request
-    url = f"https://{pc_ip}:9440/api/vmm/v4.0.a1/images"
+    url = f"https://{pc_ip}:9440/api/vmm/v4.0.b1/content/images"
 
     """
     setup the request headers
@@ -78,8 +78,10 @@ try:
         if response.ok:
             # show a total count of images found
             print(
-                f'Total images found: {response.json()["metadata"]["totalAvailableResults"]}'
+                f'Total images found: {response.json()["metadata"]["totalAvailableResults"]}:'
             )
+            for image in response.json()["data"]:
+                print(f'- {image["name"]}')
         else:
             print(f"An error occurred while connecting to {pc_ip}.")
             """
