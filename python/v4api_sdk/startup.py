@@ -2,45 +2,33 @@ import sys
 import urllib3
 import uuid
 import os
-import requests
 from requests.auth import HTTPBasicAuth
 import json
 from dataclasses import dataclass
 
-from tme import Utils
 
-import ntnx_lcm_py_client
-from ntnx_lcm_py_client import ApiClient as LCMClient
-from ntnx_lcm_py_client import Configuration as LCMConfiguration
-from ntnx_lcm_py_client.rest import ApiException as LCMException
+import ntnx_lifecycle_py_client
+from ntnx_lifecycle_py_client import ApiClient as LCMClient
+from ntnx_lifecycle_py_client import Configuration as LCMConfiguration
 
-import ntnx_prism_py_client
 from ntnx_prism_py_client import ApiClient as PrismClient
 from ntnx_prism_py_client import Configuration as PrismConfiguration
 
 import ntnx_clustermgmt_py_client
 from ntnx_clustermgmt_py_client import ApiClient as ClusterClient
 from ntnx_clustermgmt_py_client import Configuration as ClusterConfiguration
-from ntnx_clustermgmt_py_client.rest import ApiException as ClusterException
 
 import ntnx_vmm_py_client
 from ntnx_vmm_py_client import ApiClient as VMMClient
 from ntnx_vmm_py_client import Configuration as VMMConfiguration
 
-import ntnx_microseg_py_client
 from ntnx_microseg_py_client import ApiClient as MicrosegClient
 from ntnx_microseg_py_client import Configuration as MicrosegConfiguration
-from ntnx_microseg_py_client.rest import ApiException as MicrosegException
 
-from ntnx_lcm_py_client.Ntnx.lcm.v4.common.PrecheckSpec import PrecheckSpec
-from ntnx_lcm_py_client.Ntnx.lcm.v4.common.EntityUpdateSpec import EntityUpdateSpec
-from ntnx_lcm_py_client.Ntnx.lcm.v4.common.EntityUpdateSpecs import EntityUpdateSpecs
-from ntnx_lcm_py_client.Ntnx.lcm.v4.resources.RecommendationSpec import (
+from ntnx_lifecycle_py_client.models.lifecycle.v4.resources.RecommendationSpec import (
     RecommendationSpec,
 )
-from ntnx_lcm_py_client.Ntnx.lcm.v4.common.UpdateSpec import UpdateSpec
 
-from ntnx_vmm_py_client.models.vmm.v4.images import Image
 
 @dataclass
 class Config:
@@ -56,7 +44,6 @@ class Config:
 
 
 def main():
-
     # load the configuration
     try:
         if os.path.exists("./startup.json"):
@@ -72,7 +59,7 @@ def main():
         pc_ip=config_json["pc_ip"],
         pc_username=config_json["pc_username"],
         pc_password=config_json["pc_password"],
-        cluster_name=config_json["cluster_name"]
+        cluster_name=config_json["cluster_name"],
     )
 
     # create HTTPBasicAuth instance, for use cases requiring basic auth vs SDK auth
@@ -89,7 +76,13 @@ def main():
     cluster_config = ClusterConfiguration()
     microseg_config = MicrosegConfiguration()
 
-    for config in [lcm_config, prism_config, vmm_config, cluster_config, microseg_config]:
+    for config in [
+        lcm_config,
+        prism_config,
+        vmm_config,
+        cluster_config,
+        microseg_config,
+    ]:
         config.host = user_config.pc_ip
         config.username = user_config.pc_username
         config.password = user_config.pc_password
@@ -100,21 +93,35 @@ def main():
     vmm_client = VMMClient(configuration=vmm_config)
     cluster_client = ClusterClient(configuration=cluster_config)
     microseg_client = MicrosegClient(configuration=microseg_config)
-    
-    for client in [lcm_client, prism_client, vmm_client, cluster_client, microseg_client]:
-        client.add_default_header(header_name="Accept-Encoding", header_value="gzip, deflate, br")
+
+    for client in [
+        lcm_client,
+        prism_client,
+        vmm_client,
+        cluster_client,
+        microseg_client,
+    ]:
+        client.add_default_header(
+            header_name="Accept-Encoding", header_value="gzip, deflate, br"
+        )
 
     rec_spec = RecommendationSpec()
     rec_spec.entity_types = ["software"]
 
-    lcm_instance = ntnx_lcm_py_client.api.RecommendationsApi(api_client=lcm_client)
+    lcm_instance = ntnx_lifecycle_py_client.api.RecommendationsApi(
+        api_client=lcm_client
+    )
 
-    cluster_instance = ntnx_clustermgmt_py_client.api.ClusterApi(api_client=cluster_client)
+    cluster_instance = ntnx_clustermgmt_py_client.api.ClustersApi(
+        api_client=cluster_client
+    )
     if live:
         try:
-            cluster_list = cluster_instance.get_clusters(async_req=False)
-            cluster = [ x for x in cluster_list.data if x["name"] == user_config.cluster_name ]
-            cluster_extid = cluster[0]["extId"]
+            cluster_list = cluster_instance.list_clusters(async_req=False)
+            cluster = [
+                x for x in cluster_list.data if x.name == user_config.cluster_name
+            ]
+            cluster_extid = cluster[0].ext_id
         except ntnx_clustermgmt_py_client.rest.ApiException as ex:
             print(type(ex))
             sys.exit()
@@ -126,15 +133,17 @@ def main():
 
     unique_id = uuid.uuid1()
 
-    new_image = ntnx_vmm_py_client.models.vmm.v4.images.Image.Image()
+    new_image = ntnx_vmm_py_client.models.vmm.v4.content.Image.Image()
     new_image.name = f"image_{unique_id}"
     new_image.desc = "no desc"
     new_image.type = "DISK_IMAGE"
-    image_source = ntnx_vmm_py_client.models.vmm.v4.images.UrlSource.UrlSource()
+    image_source = ntnx_vmm_py_client.models.vmm.v4.content.UrlSource.UrlSource()
     image_source.url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-2003.qcow2"
     image_source.allow_insecure = False
     new_image.source = image_source
-    image_cluster = ntnx_vmm_py_client.models.vmm.v4.images.ClusterReference.ClusterReference()
+    image_cluster = (
+        ntnx_vmm_py_client.models.vmm.v4.ahv.config.ClusterReference.ClusterReference()
+    )
     image_cluster.ext_id = cluster_extid
     new_image.initial_cluster_locations = [image_cluster]
 

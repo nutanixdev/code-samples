@@ -1,5 +1,7 @@
 """
 Use the Nutanix v4 Python SDK to update a Prism Central image
+
+Requires Prism Central 2024.1 or later and AOS 6.8 or later
 """
 
 import getpass
@@ -12,10 +14,8 @@ from ntnx_vmm_py_client import ApiClient as VMMClient
 from ntnx_vmm_py_client import Configuration as VMMConfiguration
 from ntnx_vmm_py_client.rest import ApiException as VMMException
 
-import ntnx_prism_py_client
 from ntnx_prism_py_client import ApiClient as PrismClient
 from ntnx_prism_py_client import Configuration as PrismConfiguration
-from ntnx_prism_py_client.rest import ApiException as PrismException
 
 from tme import Utils
 
@@ -63,7 +63,6 @@ Please enter a password or Ctrl-C/Ctrl-D to exit."
         )
 
 if __name__ == "__main__":
-
     vmm_config = VMMConfiguration()
     prism_config = PrismConfiguration()
 
@@ -74,7 +73,6 @@ if __name__ == "__main__":
         config.verify_ssl = False
 
     try:
-
         vmm_client = VMMClient(configuration=vmm_config)
         prism_client = PrismClient(configuration=prism_config)
 
@@ -85,11 +83,9 @@ if __name__ == "__main__":
 
         vmm_instance = ntnx_vmm_py_client.api.ImagesApi(api_client=vmm_client)
         # get a list of existing images
-        images_list = vmm_instance.get_images_list()
+        images_list = vmm_instance.list_images()
         if images_list.metadata.total_available_results > 0:
-            print(
-                f"Images found: {len(images_list.data)}"
-            )
+            print(f"Images found: {len(images_list.data)}")
         else:
             print("No images found.")
             sys.exit()
@@ -97,24 +93,29 @@ if __name__ == "__main__":
         # images have been found - update the first image in the list
         # to begin, we must retrieve that image's details
         print("Getting image ...")
-        existing_image = vmm_instance.get_image_by_ext_id(images_list.data[0].ext_id)
+        existing_image = vmm_instance.get_image_by_id(images_list.data[0].ext_id)
 
         # get the existing image's Etag
-        existing_image_etag = existing_image.data._reserved["ETag"]
+        # existing_image_etag = existing_image.data._reserved["ETag"]
+        existing_image_etag = vmm_client.get_etag(existing_image)
 
         print(f"Working with image named {existing_image.data.name} ...")
 
         # create a new Prism Central image instance
-        new_image = ntnx_vmm_py_client.models.vmm.v4.images.Image.Image()
+        new_image = ntnx_vmm_py_client.models.vmm.v4.content.Image.Image()
         new_image.data = existing_image.data
         new_image.name = f"{existing_image.data.name} - Updated"
         new_image.type = existing_image.data.type
 
         # add the existing image's Etag as a new request header
-        vmm_client.add_default_header(header_name="If-Match", header_value=existing_image_etag)
+        vmm_client.add_default_header(
+            header_name="If-Match", header_value=existing_image_etag
+        )
 
         # update the image using a synchronous request (will wait until completion before returning)
-        image_update = vmm_instance.update_image_by_ext_id(body=new_image, extId=existing_image.data.ext_id, async_req=False)
+        image_update = vmm_instance.update_image_by_id(
+            body=new_image, extId=existing_image.data.ext_id, async_req=False
+        )
         task_extid = image_update.data.ext_id
         utils.monitor_task(
             task_ext_id=task_extid,

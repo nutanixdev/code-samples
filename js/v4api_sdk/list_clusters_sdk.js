@@ -9,7 +9,7 @@
  *
  * Requirements:
  *
- * Prism Central pc.2023.3 or later
+ * Prism Central pc.2024.1 or later and AOS 6.8 or later
 */
 
 const sdk = require("@nutanix-api/clustermgmt-js-client/dist/lib/index");
@@ -45,7 +45,7 @@ fs.readFile('./config.json', 'utf8', (err, data) => {
 		console.log(`Prism Central IP or FQDN: ${client.host}`);
 		console.log(`Username: ${client.username}`);
 
-		let clientApi = new sdk.ClusterApi(client);
+		let clientApi = new sdk.ClustersApi(client);
 
 		// setup request options
 		var entityListOptions = new Object();
@@ -54,7 +54,7 @@ fs.readFile('./config.json', 'utf8', (err, data) => {
 		entityListOptions.filter = '';
 		entityListOptions.orderBy = '';
 
-		clientApi.getClusters(entityListOptions).then(({ data, response }) => {
+		clientApi.listClusters(entityListOptions).then(({ data, response }) => {
 			console.log(`API returned the following status code: ${response.status}`);
 			data.getData().forEach(element => console.log('Cluster found with name "' + element.name + '"'))
 		}).catch((err) => {

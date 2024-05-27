@@ -1,6 +1,7 @@
 """
 Use the Nutanix v4 API SDKs to gather a list of upgradeable LCM entities,
 then generate an LCM update plan
+Requires Prism Central pc.2024.1 or later and AOS 6.8 or later
 """
 
 import getpass
@@ -11,18 +12,18 @@ from pprint import pprint
 import urllib3
 from timeit import default_timer as timer
 
-# only the ntnx_lcm_py_client namespace is required for this code sample
-import ntnx_lcm_py_client
-from ntnx_lcm_py_client import ApiClient as LCMClient
-from ntnx_lcm_py_client import Configuration as LCMConfiguration
-from ntnx_lcm_py_client.rest import ApiException as LCMException
+# only the ntnx_lifecycle_py_client namespace is required for this code sample
+import ntnx_lifecycle_py_client
+from ntnx_lifecycle_py_client import ApiClient as LCMClient
+from ntnx_lifecycle_py_client import Configuration as LCMConfiguration
+from ntnx_lifecycle_py_client.rest import ApiException as LCMException
 
 # required for building the list of LCM components that can be updated
-from ntnx_lcm_py_client.Ntnx.lcm.v4.common.PrecheckSpec import PrecheckSpec
-from ntnx_lcm_py_client.Ntnx.lcm.v4.common.EntityUpdateSpec import EntityUpdateSpec
-from ntnx_lcm_py_client.Ntnx.lcm.v4.common.EntityUpdateSpecs import EntityUpdateSpecs
-from ntnx_lcm_py_client.Ntnx.lcm.v4.resources.RecommendationSpec import RecommendationSpec
-from ntnx_lcm_py_client.Ntnx.lcm.v4.common.UpdateSpec import UpdateSpec
+from ntnx_lifecycle_py_client.models.lifecycle.v4.common.PrechecksSpec import PrechecksSpec
+from ntnx_lifecycle_py_client.models.lifecycle.v4.resources.RecommendationSpec import RecommendationSpec
+from ntnx_lifecycle_py_client.models.lifecycle.v4.common.EntityUpdateSpec import EntityUpdateSpec
+from ntnx_lifecycle_py_client.models.lifecycle.v4.common.EntityType import EntityType
+from ntnx_lifecycle_py_client.models.lifecycle.v4.common.UpgradeSpec import UpgradeSpec
 
 # small library that manages commonly-used tasks across these code samples
 from tme import Utils
@@ -97,11 +98,12 @@ environment configuration."
         )
         if run_inventory:
             # start an LCM inventory
-            lcm_instance = ntnx_lcm_py_client.api.InventoryApi(api_client=lcm_client)
+            lcm_instance = ntnx_lifecycle_py_client.api.InventoryApi(api_client=lcm_client)
             print("Starting LCM inventory ...")
-            inventory = lcm_instance.inventory(async_req=False)
+            inventory = lcm_instance.perform_inventory(async_req=False)
+
             # grab the unique identifier for the LCM inventory task
-            inventory_task_ext_id = inventory.data["extId"]
+            inventory_task_ext_id = inventory.data.ext_id
             inventory_duration = utils.monitor_task(
                 task_ext_id=inventory_task_ext_id,
                 task_name="Inventory",
@@ -114,11 +116,12 @@ environment configuration."
         else:
             print("LCM Inventory skipped.")
 
+
         # gather a list of supported entities
         # this will be used to show human-readable update info shortly
-        lcm_instance = ntnx_lcm_py_client.api.EntityApi(api_client=lcm_client)
+        lcm_instance = ntnx_lifecycle_py_client.api.EntitiesApi(api_client=lcm_client)
         print("Getting Supported Entity list ...")
-        entities = lcm_instance.get_entities(async_req=False)
+        entities = lcm_instance.list_entities(async_req=False)
 
         """
         gather LCM update recommendations
@@ -126,9 +129,17 @@ environment configuration."
         before the v4 LCM APIs and SDKs are released as Generally Available
         (GA); this script should be used for demonstration purposes only
         """
-        lcm_instance = ntnx_lcm_py_client.api.RecommendationsApi(api_client=lcm_client)
+        lcm_instance = ntnx_lifecycle_py_client.api.RecommendationsApi(api_client=lcm_client)
         print("Getting LCM Recommendations ...")
         rec_spec = RecommendationSpec()
+
+        rec_spec.recommendation_spec = RecommendationSpec()
+
+        
+
+        
+
+
         # specify that this script should only look for available software updates
         rec_spec.entity_types = ["software"]
         recommendations = lcm_instance.get_recommendations(
@@ -160,7 +171,7 @@ components can be updated:"
             # note this is the new way of doing this; we previously used PlanApi
             # for this demo we'll do this for all recommendations returned
             # in the previous request
-            lcm_instance = ntnx_lcm_py_client.api.NotificationsApi(api_client=lcm_client)
+            lcm_instance = ntnx_lifecycle_py_client.api.NotificationsApi(api_client=lcm_client)
             print("Generating LCM Upgrade Notifications ...")
             entity_update_specs = EntityUpdateSpecs()
             entity_update_specs.entity_update_specs = []
@@ -189,7 +200,7 @@ updates available."
                 install_updates = utils.confirm("Install updates?")
                 if install_updates:
                     # do the actual update
-                    lcm_instance = ntnx_lcm_py_client.api.UpdateApi(
+                    lcm_instance = ntnx_lifecycle_py_client.api.UpdateApi(
                         api_client=lcm_client
                     )
                     print("Updating software via LCM ...")

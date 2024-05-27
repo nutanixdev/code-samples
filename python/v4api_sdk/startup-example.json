@@ -1,0 +1,6 @@
+{
+	"pc_ip": "<prism_central_ip_here>",
+	"pc_username": "<prism_central_username_here>",
+	"pc_password": "<prism_central_password_here>",
+	"cluster_name": "<cluster_name_here>"
+}

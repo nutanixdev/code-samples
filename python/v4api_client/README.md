@@ -1,6 +1,8 @@
-# Nutanix v4 API Sample Script
+# Nutanix v4 API Sample Scripts
 
 Code sample to demonstrate use of the new Nutanix v4 APIs via Python client.
+
+Requires Prism Central 2024.1 or later and AOS 6.8 or later.
 
 ## Recommendations
 

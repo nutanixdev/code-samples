@@ -1,5 +1,6 @@
 """
 Use the Nutanix v4 Python SDK to create a Prism Central VM
+Requires Prism Central pc.2024.1 or later, AOS 6.8 or later
 """
 
 import getpass
@@ -14,7 +15,6 @@ import ntnx_vmm_py_client
 import ntnx_prism_py_client
 import ntnx_clustermgmt_py_client
 import ntnx_networking_py_client
-import ntnx_storage_py_client
 
 from ntnx_vmm_py_client import Configuration as VMMConfiguration
 from ntnx_vmm_py_client import ApiClient as VMMClient
@@ -28,9 +28,6 @@ from ntnx_clustermgmt_py_client import ApiClient as ClusterClient
 
 from ntnx_networking_py_client import Configuration as NetworkingConfiguration
 from ntnx_networking_py_client import ApiClient as NetworkingClient
-
-from ntnx_storage_py_client import Configuration as StorageConfiguration
-from ntnx_storage_py_client import ApiClient as StorageClient
 
 from tme import Utils
 
@@ -47,10 +44,10 @@ def confirm_entity(api, client, entity_name: str, exclusions: list) -> str:
     print(f"Retrieving {entity_name} list ...")
     offset = 0
     if entity_name == "cluster":
-        entities = instance.get_clusters(async_req=False)
+        entities = instance.list_clusters(async_req=False)
         offset = 1
     elif entity_name == "image":
-        entities = instance.get_images_list(async_req=False)
+        entities = instance.list_images(async_req=False)
     elif entity_name == "subnet":
         entities = instance.list_subnets(async_req=False)
     else:
@@ -65,8 +62,8 @@ def confirm_entity(api, client, entity_name: str, exclusions: list) -> str:
             if entity.name not in exclusions:
                 found_entities.append({"name": entity.name, "ext_id": entity.ext_id})
         else:
-            if entity["name"] not in exclusions:
-                found_entities.append({"name": entity["name"], "ext_id": entity["extId"]})
+            if entity.name not in exclusions:
+                found_entities.append({"name": entity.name, "ext_id": entity.ext_id})
     print(
         f"The following {entity_name}s ({len(entities.data)-offset}) \
  were found."
@@ -143,14 +140,12 @@ password: ",
     prism_config = PrismConfiguration()
     cluster_config = ClusterConfiguration()
     networking_config = NetworkingConfiguration()
-    storage_config = StorageConfiguration()
 
     for config in [
         vmm_config,
         prism_config,
         cluster_config,
         networking_config,
-        storage_config,
     ]:
         config.host = pc_ip
         config.username = username
@@ -161,14 +156,12 @@ password: ",
     prism_client = PrismClient(configuration=prism_config)
     cluster_client = ClusterClient(configuration=cluster_config)
     networking_client = NetworkingClient(configuration=networking_config)
-    storage_client = StorageClient(configuration=storage_config)
 
     for client in [
         vmm_client,
         prism_client,
         cluster_client,
         networking_client,
-        storage_client,
     ]:
         client.add_default_header(
             header_name="Accept-Encoding", header_value="gzip, deflate, br"
@@ -180,7 +173,7 @@ password: ",
     boot disk will be cloned from
     """
     cluster_ext_id = confirm_entity(
-        ntnx_clustermgmt_py_client.api.ClusterApi,
+        ntnx_clustermgmt_py_client.api.ClustersApi,
         cluster_client,
         "cluster",
         ["Unnamed"],
@@ -197,16 +190,17 @@ password: ",
     print("Retrieving storage container list ...")
     print(
         'Note: Containers are filtered to match only those containing \
-the text "default-container-".'
+the text "default".'
     )
-    storage_instance = ntnx_storage_py_client.api.StorageContainerApi(
-        api_client=storage_client
+    storage_instance = ntnx_clustermgmt_py_client.api.StorageContainersApi(
+        api_client=cluster_client
     )
-    container_list = storage_instance.get_all_storage_containers(
-        async_req=False, _filter="contains(name, 'default-container-')"
+    container_list = storage_instance.list_storage_containers(
+        async_req=False, _filter="contains(name, 'default')"
     )
-    container_ext_id = container_list.data[0]["containerExtId"]
-    container_name = container_list.data[0]["name"]
+
+    container_ext_id = container_list.data[0].container_ext_id
+    container_name = container_list.data[0].name
     print(
         f'VM will be created on storage container named "{container_name}" \
 with ext_id {container_ext_id}.\n'
@@ -337,8 +331,10 @@ Cloud-Init userdata, modify userdata.yaml."
         poll_timeout=1,
         prefix="",
     )
-    prism_instance = ntnx_prism_py_client.api.TaskApi(api_client=prism_client)
-    new_vm_ext_id = prism_instance.task_get(task_extid).data.entities_affected[0].ext_id
+    prism_instance = ntnx_prism_py_client.api.TasksApi(api_client=prism_client)
+    new_vm_ext_id = (
+        prism_instance.get_task_by_id(task_extid).data.entities_affected[0].ext_id
+    )
     print(
         f"New VM named {vm_name} has been created with \
 ext_id {new_vm_ext_id}.\n"
