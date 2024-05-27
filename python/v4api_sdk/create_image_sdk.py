@@ -145,9 +145,7 @@ not been included in this list."
         image_source.url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-2211.qcow2"
         image_source.allow_insecure = False
         new_image.source = image_source
-        image_cluster = (
-            ntnx_vmm_py_client.models.vmm.v4.ahv.config.ClusterReference.ClusterReference()
-        )
+        image_cluster = ntnx_vmm_py_client.models.vmm.v4.ahv.config.ClusterReference.ClusterReference()
         image_cluster.ext_id = cluster_ext_id
         new_image.initial_cluster_locations = [image_cluster]
 
@@ -160,9 +158,7 @@ not been included in this list."
             # this method is a little cumbersome but allows task IDs from
             # different endpoints and APIs to be used with the
             # monitor_task function
-            create_ext_id = (
-                image_create.data.ext_id
-            )
+            create_ext_id = image_create.data.ext_id
             utils.monitor_task(
                 task_ext_id=create_ext_id,
                 task_name="Create image",

@@ -16,7 +16,6 @@ import urllib3
 
 import ntnx_networking_py_client
 import ntnx_clustermgmt_py_client
-import ntnx_prism_py_client
 
 from ntnx_networking_py_client import Configuration as NetworkingConfiguration
 from ntnx_networking_py_client import ApiClient as NetworkingClient
@@ -298,7 +297,6 @@ Check the format then try again."
 
     # did the user say Yes to creating the subnet?
     if confirm_create:
-
         networking_instance = ntnx_networking_py_client.api.SubnetApi(
             api_client=networking_client
         )
@@ -318,9 +316,7 @@ Check the format then try again."
             poll_timeout=1,
             prefix="",
         )
-        print(
-            f"New Subnet named {config_json['name']} has been created.\n"
-        )
+        print(f"New Subnet named {config_json['name']} has been created.\n")
     else:
         print("Subnet creation cancelled.")
 

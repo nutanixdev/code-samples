@@ -5,7 +5,6 @@ Use the Nutanix v4 API SDKs to request and parse a list of all available images
 import getpass
 import argparse
 import urllib3
-import sys
 
 import ntnx_vmm_py_client
 from ntnx_vmm_py_client import ApiClient as VMMClient
@@ -62,7 +61,6 @@ if __name__ == "__main__":
     config.backoff_factor = 3
     config.verify_ssl = False
     try:
-
         api_client = VMMClient(configuration=config)
         api_instance = ntnx_vmm_py_client.api.ImagesApi(api_client=api_client)
         # without filters
@@ -75,17 +73,15 @@ if __name__ == "__main__":
             print("No images found.")
         # with filters
         images_list_with_filter = api_instance.list_images(
-            _filter="startswith(name, 'U')"
+            _filter="startswith(name, 'A')"
         )
         if images_list_with_filter.metadata.total_available_results > 0:
             print(
-                f"Images with name beginning with 'U': {len(images_list_with_filter.data)}"
+                f"Images with name beginning with 'A': {len(images_list_with_filter.data)}"
             )
         else:
             print('No images found with name starting with "U".')
-        images_list_matches = api_instance.list_images(
-            _filter="name in ('scenario01')"
-        )
+        images_list_matches = api_instance.list_images(_filter="name in ('scenario01')")
         if images_list_matches.metadata.total_available_results > 0:
             print(f"Images found with names in list: {len(images_list_matches.data)}")
         else:
@@ -93,16 +89,14 @@ if __name__ == "__main__":
         # using _orderby
         images_list_orderby_name = api_instance.list_images(_orderby="name asc")
         if images_list_orderby_name.metadata.total_available_results > 0:
-            print(f"\nImages found in PC instance, ordered by name, ascending:")
+            print("\nImages found in PC instance, ordered by name, ascending:")
             for image in images_list_orderby_name.data:
                 print(f"Image name: {image.name} ({image.ext_id})")
         else:
             print("No images found while using order by name filter.")
-        images_list_orderby_size = api_instance.list_images(
-            _orderby="sizeBytes desc"
-        )
+        images_list_orderby_size = api_instance.list_images(_orderby="sizeBytes desc")
         if images_list_orderby_size.metadata.total_available_results > 0:
-            print(f"\nImages found in PC instance, ordered by size, descending:")
+            print("\nImages found in PC instance, ordered by size, descending:")
             for image in images_list_orderby_size.data:
                 print(f"Image name: {image.name}, size (bytes): {image.size_bytes}")
         else:

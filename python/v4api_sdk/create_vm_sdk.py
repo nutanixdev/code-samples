@@ -332,7 +332,9 @@ Cloud-Init userdata, modify userdata.yaml."
         prefix="",
     )
     prism_instance = ntnx_prism_py_client.api.TasksApi(api_client=prism_client)
-    new_vm_ext_id = prism_instance.get_task_by_id(task_extid).data.entities_affected[0].ext_id
+    new_vm_ext_id = (
+        prism_instance.get_task_by_id(task_extid).data.entities_affected[0].ext_id
+    )
     print(
         f"New VM named {vm_name} has been created with \
 ext_id {new_vm_ext_id}.\n"

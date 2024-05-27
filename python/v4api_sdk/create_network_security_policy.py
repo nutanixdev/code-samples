@@ -43,7 +43,12 @@ def confirm_entity(api, client, entity_name: str) -> str:
 
     try:
         if entity_name == "category":
-            entities = instance.list_categories(async_req=False)
+            # this filter is specific to this code sample and would need
+            # to be modified before use elsewhere
+            entities = instance.list_categories(
+                async_req=False,
+                _filter="type eq Schema.Enums.CategoryType'USER' and not contains(key, 'Calm')",
+            )
         else:
             print(f"{entity_name} is not supported.  Exiting.")
             sys.exit()
@@ -55,7 +60,9 @@ def confirm_entity(api, client, entity_name: str) -> str:
         print(ex)
         sys.exit()
     except urllib3.exceptions.MaxRetryError as ex:
-        print(f"Error connecting to {client.configuration.host}.  Check connectivity, then try again.  Details:")
+        print(
+            f"Error connecting to {client.configuration.host}.  Check connectivity, then try again.  Details:"
+        )
         print(ex)
         sys.exit()
 
@@ -63,15 +70,14 @@ def confirm_entity(api, client, entity_name: str) -> str:
     # the correct entity
     found_entities = []
     for entity in entities.data:
-        if entity.type not in ["SYSTEM", "INTERNAL"]:
-            found_entities.append(
-                {
-                    "description": entity.description,
-                    "key": entity.key,
-                    "value": entity.value,
-                    "ext_id": entity.ext_id,
-                }
-            )
+        found_entities.append(
+            {
+                "description": entity.description,
+                "key": entity.key,
+                "value": entity.value,
+                "ext_id": entity.ext_id,
+            }
+        )
     print(f"The following categories ({len(found_entities)}) were found.")
     pprint(found_entities)
 
@@ -158,7 +164,6 @@ password: ",
         config.verify_ssl = False
         config.logger_file = "./create_network_security_policy.log"
 
-
     prism_client = PrismClient(configuration=prism_config)
     microseg_client = MicrosegClient(configuration=microseg_config)
 
@@ -171,9 +176,8 @@ password: ",
         "This demo creates a Two Environment Isolation Policy in MONITOR \
 mode.  You will now be prompted for the ext_id of the two isolation groups \
 that this policy's rule will apply to.  Note: In the context of this demo \
-Isolation Groups are Prism Central categories; SYSTEM and INTERNAL \
-categories will be filtered from the upcoming list.\n\nPress ENTER to \
-continue."
+Isolation Groups are Prism Central categories; only USER type categories \
+are included in the upcoming list.\n\nPress ENTER to continue."
     )
 
     """
@@ -231,7 +235,6 @@ Security changes in your environment."
 
     # did the user say Yes to creating the policy?
     if confirm_create:
-
         microseg_instance = ntnx_microseg_py_client.api.NetworkSecurityPoliciesApi(
             api_client=microseg_client
         )

@@ -143,17 +143,23 @@ password: ",
                 existing_vm = vmm_instance.get_vm_by_id(vm.ext_id)
                 existing_vm.data.name = f"MODIFIED_{existing_vm.data.name}"
                 etag = vmm_client.get_etag(existing_vm)
-                batch_spec_payload_list.append(BatchSpecPayload(
-                    data=existing_vm.data,
-                    metadata=BatchSpecPayloadMetadata(
-                        headers=[
-                            BatchSpecPayloadMetadataHeader(name="If-Match", value=etag)
-                        ],
-                        path=[
-                            BatchSpecPayloadMetadataPath(name="extId", value=existing_vm.data.ext_id)
-                        ],
-                    ),
-                ))
+                batch_spec_payload_list.append(
+                    BatchSpecPayload(
+                        data=existing_vm.data,
+                        metadata=BatchSpecPayloadMetadata(
+                            headers=[
+                                BatchSpecPayloadMetadataHeader(
+                                    name="If-Match", value=etag
+                                )
+                            ],
+                            path=[
+                                BatchSpecPayloadMetadataPath(
+                                    name="extId", value=existing_vm.data.ext_id
+                                )
+                            ],
+                        ),
+                    )
+                )
 
             batch_spec = BatchSpec(
                 metadata=BatchSpecMetadata(

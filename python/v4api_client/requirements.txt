@@ -1,11 +1,2 @@
 requests==2.31.0
 ruff==0.1.15
-ntnx_vmm_py_client==4.0.3a1
-ntnx_lcm_py_client==4.0.1a1
-ntnx_prism_py_client==4.0.3a2
-ntnx_clustermgmt_py_client==4.0.2a2
-ntnx_aiops_py_client==4.0.3a2
-ntnx_networking_py_client==4.0.1b1
-ntnx_storage_py_client==4.0.2a3
-ntnx_microseg_py_client==4.0.1a1
-ntnx_iam_py_client==4.0.2a1

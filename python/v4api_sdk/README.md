@@ -49,3 +49,35 @@ To use these optional files, continue below:
   python -i startup.py
   ```
 - If the script returns no errors, initialisation was successful.
+
+## Screenshots
+
+### List Images
+
+![List Images](./screenshot_list_images.png)
+
+### Create Image
+
+![Create image](./screenshot_create_image.png)
+
+### Batch Operations
+
+![Batch Operations - Create](./screenshot_batch_create.png)
+![Batch Operations - Modify](./screenshot_batch_modify.png)
+
+### Create Network Security Policy
+
+![Create Network Security Policy](./screenshot_create_nsp1.png)
+![Create Network Security Policy](./screenshot_create_nsp2.png)
+
+### Create Categories
+
+![Create Categories](./screenshot_create_cats.png)
+
+### Create Networking Subnet
+
+![Create Networking Subnet](./screenshot_create_subnet.png)
+
+### Create Virtual Machine
+
+![Create Virtual Machine](./screenshot_create_vm.png)

@@ -60,7 +60,7 @@ try:
     ).decode("ascii")
     auth_header = f"Basic {encoded_credentials}"
     # setup the URL that will be used for the API request
-    url = f"https://{pc_ip}:9440/api/vmm/v4.0.a1/images"
+    url = f"https://{pc_ip}:9440/api/vmm/v4.0.b1/content/images"
 
     """
     setup the request headers
@@ -96,7 +96,7 @@ try:
         # to begin, we must retrieve that image's details
         existing_image_ext_id = response.json()["data"][0]["extId"]
         # get the existing image details
-        url = f"https://{pc_ip}:9440/api/vmm/v4.0.a1/images/{existing_image_ext_id}"
+        url = f"https://{pc_ip}:9440/api/vmm/v4.0.a1/content/images/{existing_image_ext_id}"
         existing_image = requests.get(url, headers=headers, verify=False, timeout=10)
 
         # get the existing image's resource Etag
@@ -122,7 +122,7 @@ try:
         update_payload["name"] = f'{update_payload["name"]} - Updated'
 
         # update the image
-        url = f"https://{pc_ip}:9440/api/vmm/v4.0.a1/images/{existing_image_ext_id}"
+        url = f"https://{pc_ip}:9440/api/vmm/v4.0.a1/content/images/{existing_image_ext_id}"
         update = requests.put(url, headers=headers, data=json.dumps(update_payload), verify=False, timeout=10)
         print(update.json())
 
