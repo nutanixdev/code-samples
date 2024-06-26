@@ -24,6 +24,7 @@ Chris Rasmussen, Developer Content Architect, Nutanix (Melbourne, AU)
 Changelog
 *********
 
+- 2024.06.26 - Removed network security rule APIs (no longer supported), added template example
 - 2019.07.22 - Removed all references to PDF generation and replaced with HTML generation
 - 2019.07.18 - Rewrote large parts for better Python readability
 - 2018.08.30 - Committed setup.py and Pipenv usage suggestions.  Added some exception handling re PC host vs PE host.
