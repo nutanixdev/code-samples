@@ -1,0 +1,177 @@
+<!doctype html>
+
+<html lang="en-us">
+
+<head>
+    <title>Prism Central Details (API v3)</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
+    <style type="text/css">
+        body { font-family: 'Open Sans', sans-serif; margin: 10px !important; }
+        .pc_card { width: 80%; margin: 20px auto; }
+    </style>
+</head>
+
+<body>
+
+<div id="main_content">
+
+    <p>The Prism Central information shown in this page is intended for demo purposes only.</p>
+    <p>Please be aware that the totals shown in parentheses next to each entity type are accurate for each entity type, but <strong>includes deleted entities</strong>. This is particularly applicable to entities such as blueprints and apps.</p>
+
+    <div class="card pc_card">
+        <div class="card-header">Clusters ($cluster_total)</div>
+        <div class="card-body">
+            <table class="table">
+                <tr class="tr_header">
+                    <td>Type</td>
+                    <td>Name</td>
+                    <td>IP address</td>
+                    <td>Software</td>
+                    <td>CE?</td>
+                </tr>
+                <tr class="final">
+                        $clusters
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="card pc_card">
+        <div class="card-header">Hosts ($host_total)</div>
+        <div class="card-body">
+            <table class="table">
+                <tr class="tr_header">
+                    <td>Name</td>
+                    <td>S/N</td>
+                    <td>IP</td>
+                    <td>CVM IP</td>
+                    <td># of VMs</td>
+                </tr>
+                <tr class="final">
+                    $hosts
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="card pc_card">
+        <div class="card-header">VMs ($vm_total)</div>
+        <div class="card-body">
+            <table class="table">
+                <tr class="tr_header">
+                    <td>Cluster:Name</td>
+                    <td>Description</td>
+                </tr>
+                <tr class="final">
+                    $vms
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="card pc_card">
+        <div class="card-header">Subnets ($subnet_total)</div>
+        <div class="card-body">
+            <table class="table">
+                <tr class="tr_header">
+                    <td>Name</td>
+                    <td>Cluster</td>
+                </tr>
+                <tr class="final">
+                    $subnets
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="card pc_card">
+        <div class="card-header">Projects ($project_total)</div>
+        <div class="card-body">
+            <table class="table">
+                <tr class="tr_header">
+                    <td>Name</td>
+                    <td>VMs</td>
+                    <td>vCPUs</td>
+                    <td>Storage (GB)</td>
+                    <td>RAM (GB)</td>
+                </tr>
+                <tr class="final">
+                    $projects
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="card pc_card">
+        <div class="card-header">Apps ($app_total)</div>
+        <div class="card-body">
+            <table class="table">
+                <tr class="tr_header">
+                    <td>Name</td>
+                    <td>Project</td>
+                    <td>Status</td>
+                </tr>
+                <tr class="final">
+                    $apps
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="card pc_card">
+        <div class="card-header">Blueprints ($blueprint_total)</div>
+        <div class="card-body">
+            <table class="table">
+                <tr class="tr_header">
+                    <td>Name</td>
+                    <td>Project</td>
+                    <td>Status</td>
+                </tr>
+                <tr class="final">
+                    $blueprints
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!--
+    <div class="card pc_card">
+        <div class="card-header">Network Security Rules ($network_security_rule_total)</div>
+        <div class="card-body">
+            <table class="table">
+                <tr class="tr_header">
+                    <td>Name</td>
+                </tr>
+                <tr class="final">
+                    $network_security_rules
+                </tr>
+            </table>
+        </div>
+    </div>
+    -->
+
+    <div class="card pc_card">
+            <div class="card-header">Images ($image_total)</div>
+            <div class="card-body">
+                <table class="table">
+                    <tr class="tr_header">
+                        <td>Name</td>
+                        <td>Image Type</td>
+                    </tr>
+                    <tr class="final">
+                        $images
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+</div>
+
+<div id="footer_content">
+    Nutanix cluster details generated on <strong>$day</strong> at <strong>$now</strong> by <strong>$username</strong> on <strong>$computer_name</strong>
+</div>
+
+</body>
+
+</html>

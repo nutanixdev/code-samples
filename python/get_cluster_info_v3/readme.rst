@@ -69,6 +69,13 @@ All the steps below assume you have a terminal session running with the current 
    - **self.entity_response_length** - Dictates how many entities are returned from a single request. **Maximum** value can be **500**.
    - **self.read_timeout** - Increase or decrease depending on the desired timeout delay (in seconds) for each request
 
+Templates
+=========
+
+An example template has been included with this repository.
+
+- Rename `templates/nutanixv3.html.example` to `templates/nutnixv3.html`, if required.
+
 Script Command Line
 ===================
 
