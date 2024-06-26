@@ -57,8 +57,11 @@ class EnvironmentOptions():
         self.read_timeout = 10
         self.entity_response_length = 20
         # these are the supported entities for this environment
+        # self.supported_entities = ['vm', 'subnet', 'cluster', 'project',
+        #                            'network_security_rule', 'image',
+        #                            'host', 'blueprint', 'app']
         self.supported_entities = ['vm', 'subnet', 'cluster', 'project',
-                                   'network_security_rule', 'image',
+                                   'image',
                                    'host', 'blueprint', 'app']
 
     def __repr__(self):
@@ -239,8 +242,11 @@ def generate_template(json_results):
     it should be a relatively simple task to update this list
     to support those entities
     '''
+    # supported_entities = [
+    #     'vm', 'subnet', 'cluster', 'project', 'network_security_rule',
+    #     'image', 'host', 'blueprint', 'app']
     supported_entities = [
-        'vm', 'subnet', 'cluster', 'project', 'network_security_rule',
+        'vm', 'subnet', 'cluster', 'project',
         'image', 'host', 'blueprint', 'app']
     for row_label in supported_entities:
         HTML_ROWS[row_label] = ''
@@ -269,6 +275,7 @@ def generate_template(json_results):
         #   VM   #
         ##########
         if json_result[0] == 'vm':
+            print("Processing VMs ...")
             try:
                 for vm in json_result[1]['entities']:
                     entity_name = vm["spec"]["cluster_reference"]["name"]
@@ -290,6 +297,7 @@ def generate_template(json_results):
         # SUBNET #
         ##########
         elif json_result[0] == 'subnet':
+            print("Processing subnets ...")
             try:
                 for subnet in json_result[1]['entities']:
                     entity_name = subnet["spec"]["cluster_reference"]["name"]
@@ -306,6 +314,7 @@ def generate_template(json_results):
         # PROJECT #
         ###########
         elif json_result[0] == 'project':
+            print("Processing projects ...")
             vm_total = 0
             cpu_total = 0
             storage_total = 0
@@ -358,16 +367,20 @@ def generate_template(json_results):
 
         #########################
         # NETWORK_SECURITY_RULE #
+        # NO LONGER SUPPORTED   #
         #########################
-        elif json_result[0] == 'network_security_rule':
-            for network_security_rule in json_result[1]['entities']:
-                entity_name = network_security_rule['spec']['name']
-                HTML_ROWS['network_security_rule'] += (f'<tr><td>{entity_name}'
-                                                       '</td></tr>')
+        # elif json_result[0] == 'network_security_rule':
+        #     print("Processing network security rules ...")
+        #     for network_security_rule in json_result[1]['entities']:
+        #         entity_name = network_security_rule['spec']['name']
+        #         HTML_ROWS['network_security_rule'] += (f'<tr><td>{entity_name}'
+        #                                                '</td></tr>')
+
         #########
         # IMAGE #
         #########
         elif json_result[0] == 'image':
+            print("Processing images ...")
             try:
                 for image in json_result[1]['entities']:
                     entity_name = image["status"]["name"]
@@ -384,6 +397,7 @@ def generate_template(json_results):
         # HOST #
         ########
         elif json_result[0] == 'host':
+            print("Processing hosts ...")
             try:
                 for host in json_result[1]['entities']:
                     if 'name' in host['status']:
@@ -425,6 +439,7 @@ def generate_template(json_results):
         # CLUSTER #
         ###########
         elif json_result[0] == 'cluster':
+            print("Processing clusters ...")
             for cluster in json_result[1]['entities']:
                 try:
                     cluster_ip = ((cluster['spec']['resources']['network']
@@ -461,6 +476,7 @@ def generate_template(json_results):
         # BLUEPRINT #
         #############
         elif json_result[0] == 'blueprint':
+            print("Processing blueprints ...")
             try:
                 for blueprint in json_result[1]['entities']:
                     entity_name = blueprint["status"]["name"]
@@ -486,6 +502,7 @@ def generate_template(json_results):
         # APP #
         #######
         elif json_result[0] == 'app':
+            print("Processing apps ...")
             for app in json_result[1]['entities']:
                 try:
                     entity_name = app['status']['name']
@@ -508,8 +525,8 @@ def generate_template(json_results):
     specify the HTML page template
     '''
 
-    current_path = os.path.dirname(sys.argv[0])
-
+    current_path = os.path.dirname(os.path.realpath(__file__))
+    
     if os.path.isfile(f'{current_path}/templates/nutanixv3.html'):
         template_name = f'{current_path}/templates/nutanixv3.html'
     else:
@@ -529,7 +546,7 @@ def generate_template(json_results):
         vms=str(HTML_ROWS['vm']),
         subnets=str(HTML_ROWS['subnet']),
         projects=str(HTML_ROWS['project']),
-        network_security_rules=str(HTML_ROWS['network_security_rule']),
+        # network_security_rules=str(HTML_ROWS['network_security_rule']),
         images=str(HTML_ROWS['image']),
         hosts=str(HTML_ROWS['host']),
         blueprints=str(HTML_ROWS['blueprint']),
@@ -539,8 +556,8 @@ def generate_template(json_results):
         vm_total=str(ENTITY_TOTALS['vm']),
         subnet_total=str(ENTITY_TOTALS['subnet']),
         project_total=str(ENTITY_TOTALS['project']),
-        network_security_rule_total=str(
-            ENTITY_TOTALS['network_security_rule']),
+        # network_security_rule_total=str(
+        #     ENTITY_TOTALS['network_security_rule']),
         image_total=str(ENTITY_TOTALS['image']),
         host_total=str(ENTITY_TOTALS['host']),
         blueprint_total=str(ENTITY_TOTALS['blueprint']),
@@ -600,7 +617,7 @@ def main():
     practices
     '''
 
-    current_path = os.path.dirname(sys.argv[0])
+    current_path = os.path.dirname(os.path.realpath(__file__))
 
     '''
     make sure our template exists
@@ -656,6 +673,7 @@ def main():
                 print('Iterating over all supported endpoints ...\n')
 
             for endpoint in endpoints:
+                print(f"Processing {endpoint['name_plural']} ...")
                 client = ApiClient(
                     environment_options.cluster_ip,
                     f'{endpoint["name_plural"]}/list',
