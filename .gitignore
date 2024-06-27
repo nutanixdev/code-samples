@@ -19,3 +19,4 @@ build/
 *.egg-info/
 
 *.log
+*.swp
