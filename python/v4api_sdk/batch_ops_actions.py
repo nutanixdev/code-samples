@@ -178,10 +178,6 @@ password: ",
         batch_instance = ntnx_prism_py_client.api.BatchesApi(api_client=prism_client)
         vmm_instance = ntnx_vmm_py_client.api.VmApi(api_client=vmm_client)
 
-        # vm_extid = "0628ac56-ba0b-4de6-61aa-4ae4e287acdc"
-        # existing_vm = vmm_instance.get_vm_by_id(vm_extid)
-        # etag = vmm_client.get_etag(existing_vm)
-
         input(
             "\nThis demo uses the Nutanix v4 API `prism` namespace's \
 batch APIs to assign matching virtual machines to a specific \
