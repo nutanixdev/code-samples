@@ -20,7 +20,7 @@ Each script language covered in this repository has an accompanying readme file 
 - **csharp**: Single-file/script Microsoft C# applications, typically run in the console
 - **go** - Golang examples
 - **postman** - JSON payloads designed for use with the [Postman](https://getpostman.com) API development application
-- **blueprints** - Nutanix Calm demo blueprints
+- **blueprints** - NCM Self-Service blueprints
 
 ## License & Usage
 
