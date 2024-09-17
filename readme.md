@@ -36,4 +36,4 @@ In addition, please also be advised that these scripts may contain code that doe
 
 **Changes will be required before these scripts can be used in production environments.**
 
-Please see the `.disclaimer` file distributed with this repository.
+See the `.disclaimer` file distributed with this repository.
