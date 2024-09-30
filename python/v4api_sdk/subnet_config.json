@@ -1,8 +1,8 @@
 {
-	"name": "UVM-Full-Test",
+	"name": "UVM",
 	"description": "User VMS only, no CVMs or Nutanix Products",
 	"subnet_type": "VLAN",
-	"network_id": 409,
+	"network_id": 406,
 	"virtual_switch_reference": "ef6defb7-bfb2-4c08-9ac7-e2cf195077ec",
 	"is_external": false,
 	"is_advanced_networking": true,
