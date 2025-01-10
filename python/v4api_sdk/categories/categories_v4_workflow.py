@@ -1,6 +1,7 @@
 '''
 This script demonstrates the usage of the Categories API in the Nutanix v4 Python SDK.
 '''
+from time import sleep
 import urllib3
 import ntnx_prism_py_client
 import ntnx_vmm_py_client
@@ -31,7 +32,6 @@ password = getpass.getpass(prompt='Enter password: ')
 
 PC_IP = args.pc_ip
 PORT = 9440
-CLUSTER_NAME = "CLUSTER-NAME"
 USERNAME = args.username
 PASSWORD = password
 
@@ -135,9 +135,11 @@ def CreateCategory(categories_api, key="example_key", value="example_value_1", d
     cat = ntnx_prism_py_client.Category(
         key=key, value=value, description=description)
     try:
-        resp = categories_api.create_category(body=cat)
-        cat_ext_id = resp.data.ext_id
         print("Category specs: ", cat.to_dict())
+        print("\nCategory creation in progress. Please wait...")
+        resp = categories_api.create_category(body=cat)
+        sleep(3)
+        cat_ext_id = resp.data.ext_id
         return cat_ext_id
     except Exception as e:
         print("Exception when calling CategoriesApi->create_category: %s\n" % e)
@@ -167,8 +169,10 @@ def CreateVm(vm_api, cluster_uuid, vm_name="example_vm", description="VM created
     )
     try:
         api_response = vm_api.create_vm(body=vm, async_req=False)
-        vm_uuid = GetVmUuidByName(vm_api, vm_name)
         print("VM specs: ", vm.to_dict())
+        print("\nVM creation in progress. Please wait...")
+        sleep(3)
+        vm_uuid = GetVmUuidByName(vm_api, vm_name)
         return vm_uuid
     except Exception as e:
         print("Exception when calling VmApi->create_vm: %s\n" % e)
@@ -409,43 +413,63 @@ def workflow(cluster_api, vm_api, categories_api):
     # Get the cluster UUID
     cluster_uuid = None
     try:
+        # get the cluster name as input
+        CLUSTER_NAME = input("Enter the cluster name: ")
         cluster_uuid = GetClusterUuidByName(
             cluster_api, CLUSTER_NAME)
-        print("Cluster UUID: ", cluster_uuid)
+        print("\nCluster UUID: ", cluster_uuid)
+        if cluster_uuid is None:
+            print("Cluster not found. Exiting the workflow.")
+            return
     except Exception as e:
         print("Exception when calling GetClusterUuidByName: %s\n" % e)
         return
 
+    input("\n\nNext step is to create a category. Press ENTER to continue...\n")
     # ------------------------------------------------------------#
     print("\n#", "-"*50, " CREATE THE CATEGORY ", "-"*50, "#\n")
     try:
         cat_ext_id = CreateCategory(categories_api, key="example_key",
                                     value="example_value_1", description="Description of the category")
-        print("Category created with ext_id: ", cat_ext_id)
+        print("\nCategory created with ext_id: ", cat_ext_id)
+        if cat_ext_id is None:
+            print("\nCategory not created. Exiting the workflow.")
+            return
     except Exception as e:
         print("Exception when calling CreateCategory: %s\n" % e)
         return
 
+    input("\n\nNext step is to fetch the recently created category. Press ENTER to continue...\n")
     # ------------------------------------------------------------#
     print("\n#", "-"*50, " FETCH THE CATEGORY ", "-"*50, "#\n")
     # Fetch a category
+    OLD_OWNER_UUID = None
     try:
         resp = GetCategoryById(categories_api, cat_ext_id)
         print("Fetched category: ", resp.data)
+        OLD_OWNER_UUID = resp.data.owner_uuid
+        if resp is None:
+            print("\nCategory not found. Exiting the workflow.")
+            return
     except Exception as e:
         print("Exception when calling GetCategoryById: %s\n" % e)
 
+    input("\n\nNext step is to create a VM. Press ENTER to continue...\n")
     # ------------------------------------------------------------#
     vm_uuid = None
     print("\n#", "-"*50, " CREATE THE VM ", "-"*50, "#\n")
     try:
         vm_uuid = CreateVm(vm_api, cluster_uuid, vm_name="example_vm",
                            description="VM created using Nutanix v4 Python SDK")
-        print("VM created with ext_id: ", vm_uuid)
+        print("\nVM created with ext_id: ", vm_uuid)
+        if vm_uuid is None:
+            print("\nVM not created. Exiting the workflow.")
+            return
     except Exception as e:
         print("Exception when calling CreateVm: %s\n" % e)
         return
 
+    input("\n\nNext step is to associate the category to the VM. Press ENTER to continue...\n")
     # ------------------------------------------------------------#
     print("\n#", "-"*50, " ASSOCIATE THE CATEGORY TO VM ", "-"*50, "#\n")
     # Associate a category from a VM
@@ -456,6 +480,7 @@ def workflow(cluster_api, vm_api, categories_api):
         print("Exception when calling AssociateCategoryToVm: %s\n" % e)
         return
 
+    input("\n\nNext step is to list all the associations of the category. Press ENTER to continue...\n")
     # ------------------------------------------------------------#
     print("\n#", "-"*50, " LIST THE ASSOCIATIONS OF THE CATEGORY ", "-"*50, "#\n")
     # List the associations of a category
@@ -465,11 +490,13 @@ def workflow(cluster_api, vm_api, categories_api):
     except Exception as e:
         print("Exception when calling ListDetailedAssociationsOfCategory: %s\n" % e)
 
+    input("\n\nNext step is to update the description of category. Press ENTER to continue...\n")
     # ------------------------------------------------------------#
     # Update a category
     print("\n#", "-"*50, " UPDATE THE DESCRIPTION OF THE CATEGORY ", "-"*50, "#\n")
     # 1. Update the description of the category
     newDescription = "New description of the category"
+    print("Old description: '", resp.data.description, "'", " New description: '", newDescription, "'\n")
     try:
         resp = UpdateDescriptionOfCategory(
             categories_api, cat_ext_id, newDescription)
@@ -477,18 +504,21 @@ def workflow(cluster_api, vm_api, categories_api):
     except Exception as e:
         print("Exception when calling UpdateDescriptionOfCategory: %s\n" % e)
 
+    input("\n\nNext step is to update the owner_uuid of category. Press ENTER to continue...\n")
     # ------------------------------------------------------------#
     print("\n#", "-"*50, " UPDATE THE OWNER_UUID OF THE CATEGORY ", "-"*50, "#\n")
     # 2. Update the Owner UUID of the category
     # Note: The owner_uuid should be a valid user_uuid
-    newOwnerUuid = "NEW_OWNER_UUID"
     try:
+        NEW_OWNER_UUID = input("Enter the new owner_uuid (must be a valid user_uuid): ")
+        print("Old owner_uuid: '", OLD_OWNER_UUID, "'", " New owner_uuid: '", NEW_OWNER_UUID, "'\n")
         resp = UpdateOwnerUuidOfCategory(
-            categories_api, cat_ext_id, newOwnerUuid)
+            categories_api, cat_ext_id, NEW_OWNER_UUID)
         print("category owner_uuid updated: ", resp)
     except Exception as e:
         print("Exception when calling UpdateOwnerUuidOfCategory: %s\n" % e)
 
+    input("\n\nNext step is to list all the categories. Press ENTER to continue...\n")
     # ------------------------------------------------------------#
     # List categories
     print("\n#", "-"*50, " LIST ALL THE CATEGORIES ", "-"*50, "#\n")
@@ -499,6 +529,7 @@ def workflow(cluster_api, vm_api, categories_api):
     except Exception as e:
         print("Exception when calling ListAllCategories: %s\n" % e)
 
+    input("\n\nNext step is to list categories with associated counts. Press ENTER to continue...\n")
     # ------------------------------------------------------------#
     print("\n#", "-"*50, " LIST CATEGORIES WITH ASSOCIATED COUNTS ", "-"*50, "#\n")
     # 2. Use expansion to show associated counts
@@ -508,6 +539,7 @@ def workflow(cluster_api, vm_api, categories_api):
     except Exception as e:
         print("Exception when calling ListCategoriesWithCount: %s\n" % e)
 
+    input("\n\nNext step is to sort the categories by key. Press ENTER to continue...\n")
     # ------------------------------------------------------------#
     print("\n#", "-"*50, " SORT THE CATEGORIES BY KEY ", "-"*50, "#\n")
     # 3. sort by key
@@ -517,6 +549,7 @@ def workflow(cluster_api, vm_api, categories_api):
     except Exception as e:
         print("Exception when calling SortCategoriesByKey: %s\n" % e)
 
+    input("\n\nNext step is to list categories with certain attributes. Press ENTER to continue...\n")
     # ------------------------------------------------------------#
     print("\n#", "-"*50, " LIST CATEGORIES WITH CERTAIN ATTRIBUTES ", "-"*50, "#\n")
     # 4. return only certain attributes in the result (e.g. value, type, description)
@@ -527,6 +560,7 @@ def workflow(cluster_api, vm_api, categories_api):
     except Exception as e:
         print("Exception when calling ListCategoriesWithAttributes: %s\n" % e)
 
+    input("\n\nNext step is to list categories matching a certain key/value content. Press ENTER to continue...\n")
     # ------------------------------------------------------------#
     print("\n#", "-"*50,
           " LIST CATEGORIES MATCHING A CERTAIN KEY/VALUE CONTENT ", "-"*50, "#\n")
@@ -538,6 +572,7 @@ def workflow(cluster_api, vm_api, categories_api):
     except Exception as e:
         print("Exception when calling ListCategoriesMatchingKeyAndValue: %s\n" % e)
 
+    input("\n\nNext step is to list categories starting with a certain string in key and value. Press ENTER to continue...\n")
     # ------------------------------------------------------------#
     print("\n#", "-"*50, " LIST CATEGORIES STARTING WITH A CERTAIN STRING IN KEY AND VALUE ", "-"*50, "#\n")
     # 6. filter categories whose key or value starting with a certain string
@@ -548,6 +583,7 @@ def workflow(cluster_api, vm_api, categories_api):
     except Exception as e:
         print("Exception when calling ListCategoriesStartingWithCertainStringInKeyAndValue: %s\n" % e)
 
+    input("\n\nNext step is to list categories sorted by key and value. Press ENTER to continue...\n")
     # ------------------------------------------------------------#
     print("\n#", "-"*50, " LIST CATEGORIES SORTED BY KEY AND VALUE ", "-"*50, "#\n")
     # 7. sort by key and value
@@ -557,6 +593,7 @@ def workflow(cluster_api, vm_api, categories_api):
     except Exception as e:
         print("Exception when calling ListCategoriesSortedByKeyAndValue: %s\n" % e)
 
+    input("\n\nNext step is to list categories of a certain type (USER / SYSTEM / INTERNAL). Press ENTER to continue...\n")
     # ------------------------------------------------------------#
     print("\n#", "-"*50, " LIST CATEGORIES OF A CERTAIN TYPE (USER / SYSTEM / INTERNAL) ", "-"*50, "#\n")
     # 8. filter categories w.r.t type USER / SYSTEM / INTERVAL
@@ -566,6 +603,7 @@ def workflow(cluster_api, vm_api, categories_api):
     except Exception as e:
         print("Exception when calling ListCategoriesOfCertainType: %s\n" % e)
 
+    input("\n\nNext step is to list categories having at least one association. Press ENTER to continue...\n")
     # ------------------------------------------------------------#
     print("\n#", "-"*50,
           " LIST CATEGORIES HAVING AT LEAST ONE ASSOCIATION ", "-"*50, "#\n")
@@ -575,6 +613,8 @@ def workflow(cluster_api, vm_api, categories_api):
         print("List of categories with at least one association: ", resp)
     except Exception as e:
         print("Exception when calling ListCategoriesWithAtLeastOneAssociation: %s\n" % e)
+
+    input("\n\nNext step is to list categories having association with a particular resource type. Press ENTER to continue...\n")
     # ------------------------------------------------------------#
     print("\n#", "-"*50,
           " LIST CATEGORIES HAVING ASSOCIATION WITH A PARTICULAR RESOURCE TYPE ", "-"*50, "#\n")
@@ -585,9 +625,9 @@ def workflow(cluster_api, vm_api, categories_api):
     except Exception as e:
         print("Exception when calling ListCategoriesWithAtLeastOneAssociation: %s\n" % e)
 
+    input("\n\nNext step is to disassociate the category from the VM. Press ENTER to continue...\n")
     # ------------------------------------------------------------#
     print("\n#", "-"*50, " DISASSOCIATE THE CATEGORY FROM VM ", "-"*50, "#\n")
-
     # Disassociate a category from a VM
     try:
         resp = DisassociateCategoryFromVm(vm_api, vm_uuid, cat_ext_id)
@@ -595,6 +635,8 @@ def workflow(cluster_api, vm_api, categories_api):
     except Exception as e:
         print("Exception when calling DisassociateCategoryFromVm: %s\n" % e)
 
+    input("\n\nNext step is to delete the VM. Press ENTER to continue...\n")
+    # ------------------------------------------------------------#
     print("\n#", "-"*50, " DELETE THE VM ", "-"*50, "#\n")
     # Delete the VM
     try:
@@ -603,6 +645,7 @@ def workflow(cluster_api, vm_api, categories_api):
     except Exception as e:
         print("Exception when calling DeleteVm: %s\n" % e)
 
+    input("\n\nNext step is to delete the category. Press ENTER to continue...\n")
     # ------------------------------------------------------------#
     print("\n#", "-" * 50, " DELETE THE CATEGORY ", "-" * 50, "#\n")
 
