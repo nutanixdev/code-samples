@@ -29,7 +29,7 @@ from ntnx_clustermgmt_py_client import ApiClient as ClusterClient
 from ntnx_networking_py_client import Configuration as NetworkingConfiguration
 from ntnx_networking_py_client import ApiClient as NetworkingClient
 
-from tme import Utils
+from tme.utils import Utils
 
 
 def confirm_entity(api, client, entity_name: str, exclusions: list) -> str:

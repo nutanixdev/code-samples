@@ -38,7 +38,7 @@ from ntnx_prism_py_client.models.prism.v4.operations.BatchSpecPayloadMetadataPat
 
 from ntnx_prism_py_client.models.prism.v4.operations.ActionType import ActionType
 
-from tme import Utils
+from tme.utils import Utils
 
 
 def main():
