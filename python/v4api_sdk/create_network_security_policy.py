@@ -30,7 +30,7 @@ from ntnx_prism_py_client import ApiClient as PrismClient
 from ntnx_prism_py_client.rest import ApiException as PrismException
 
 
-from tme import Utils
+from tme.utils import Utils
 from tme import Config
 
 
