@@ -1,4 +1,4 @@
-requests==2.31.0
+requests==2.32.2
 ruff==0.1.15
 ntnx_vmm_py_client==4.0.1
 ntnx_lifecycle_py_client==4.0.1
