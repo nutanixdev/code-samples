@@ -8,3 +8,4 @@ ntnx_aiops_py_client==4.0.1
 ntnx_networking_py_client==4.0.1
 ntnx_microseg_py_client==4.0.1
 ntnx_iam_py_client==4.0.1
+ntnx_opsmgmt_py_client==4.0.1
