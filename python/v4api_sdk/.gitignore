@@ -1,7 +1,7 @@
 venv/
 __pycache__/
 startup.json
-*.log
+*.log*
 rc_setup.zsh
 dist/
 full_image_update_etag.py
@@ -12,3 +12,4 @@ dist/
 *.egg-info/
 eslint.config.mjs
 ntnx_opsmgmt_py_client/
+test.py
