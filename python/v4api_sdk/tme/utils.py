@@ -16,6 +16,8 @@ import ntnx_prism_py_client
 from ntnx_prism_py_client import ApiClient as PrismClient
 from ntnx_prism_py_client import Configuration as PrismConfiguration
 
+from termcolor import colored,cprint
+
 @dataclass
 class Config:
     """
@@ -54,6 +56,9 @@ class Utils:
         )
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+    def printc(self, level: str = "INFO", text: str = "", color: str = ""):
+        return(f"[%s] %s" % (colored(level, color), text))
+
     def get_environment(self):
         """
         setup the command line parameters
@@ -73,20 +78,13 @@ class Utils:
         args = parser.parse_args()
 
         # get the cluster password
-        cluster_password = getpass.getpass(
-            prompt="Enter your Prism Central password: ",
-                stream=None,
-            )
+        cluster_password = getpass.getpass(prompt=self.printc("INPUT", "Enter your Prism Central password: ", "blue"), stream=None)
 
             # make sure the user enters a password
         if not cluster_password:
             while not cluster_password:
-                print(
-                    "Password cannot be empty.  \
-Enter a password or Ctrl-C/Ctrl-D to exit."
-                )
-                cluster_password = getpass.getpass(
-                    prompt="Enter your Prism Central password: ", stream=None
+                print(self.printc("ERR", "Password cannot be empty. Enter a password or Ctrl-C/Ctrl-D to exit.", "red"))
+                cluster_password = getpass.getpass(prompt=self.printc("INPUT", "Enter your Prism Central password: ", "blue"), stream=None
                 )
 
         config = Config(pc_ip=args.pc_ip,
