@@ -1,0 +1,6 @@
+Dependencies and Licenses
+-------------------------
+
+streamlit: Apache 2.0 License, https://github.com/streamlit/streamlit/blob/develop/LICENSE
+streamlit-extras: Apache 2.0 License, https://github.com/arnaudmiribel/streamlit-extras/blob/main/LICENSE
+openai: Apache 2.0 License, https://github.com/openai/openai-python/blob/main/LICENSE
