@@ -10,7 +10,6 @@ from dataclasses import dataclass
 
 from .utils import Config
 
-
 class ApiClient:
     """
     class to Nutanix v4 API and SDK connections

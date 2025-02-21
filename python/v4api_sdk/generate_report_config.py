@@ -3,8 +3,8 @@ Use the Nutanix v4 API SDKs to demonstrate AI Ops report configuration creation
 Requires Prism Central 2024.3 or later and AOS 7.0 or later
 """
 
-import urllib3
 import uuid
+import urllib3
 
 from ntnx_opsmgmt_py_client.rest import ApiException as ReportingException
 # there's no need to import the namespace's configuration and client modules
@@ -55,19 +55,46 @@ def main():
 
     # prompt for report start and end time
     # include sensible defaults
-    print("You will now be prompted for the report start and end times.")
-    print("Press enter at each prompt if you want to accept the defaults.")
-    print(f"Default start time: {default_start}")
-    print(f"Default end time: {default_end}")
+    print(
+        utils.printc(
+            "INFO",
+            "You will now be prompted for the report start and end times.",
+            "green",
+        )
+    )
+    print(
+        utils.printc(
+            "INFO",
+            "Press enter at each prompt to accept \
+the default values.",
+            "green",
+        )
+    )
+    print(utils.printc("INFO", f"Default start time: {default_start}", "green"))
+    print(utils.printc("INFO", f"Default end time: {default_end}", "green"))
 
-    start_time = input("Enter the report start time in ISO-8601 format: ")
+    start_time = input(
+        utils.printc(
+            "INPUT",
+            "Enter the report start time in ISO-8601 \
+format: ",
+            "blue",
+        )
+    )
     if not start_time:
         start_time = default_start
-        print("Default start time used ...")
-    end_time = input("Enter the report end time in ISO-8601 format: ")
+        print(utils.printc("INFO", "Default start time used ...", "green"))
+    end_time = input(
+        utils.printc(
+            "INPUT",
+            "Enter the report end time in ISO-8601 \
+format: ",
+            "blue",
+        )
+    )
     if not end_time:
         end_time = default_end
-        print("Default end time used ...")
+        print(utils.printc("INFO", "Default end time used ...", "green"))
 
     try:
         # setup the instance of our ApiClient class
@@ -82,34 +109,58 @@ def main():
             api_client=reporting_client.api_client
         )
 
-        input(
-            "\nThis demo uses the Nutanix v4 API `opsmgmt` namespace's \
-reporting APIs to create an AIOps report configuration. \
-The new report configuration can be used to run a manual or scheduled \
-report. You will now be prompted for some report-specific details.\n\nPress ENTER to continue."
+        print(
+            utils.printc(
+                "INFO",
+                "This demo uses the Nutanix v4 API `opsmgmt` \
+namespace's reporting APIs to create an \
+AIOps report configuration. The new report \
+configuration can be used to run a manual \
+or scheduled report. You will now be \
+prompted for some report-specific details.",
+                "green",
+            )
         )
 
         # get a list of existing report configurations
-        print("Building list of existing report configurations ...")
+        print(
+            utils.printc(
+                "SDK",
+                "Building list of existing report \
+configurations ...",
+                "magenta",
+            )
+        )
 
         config_list = reporting_instance.list_report_configs(async_req=False)
 
         if config_list.data:
-            print(f"{len(config_list.data)} report configurations found.")
+            print(
+                utils.printc(
+                    "RESP",
+                    f"{len(config_list.data)} report configurations \
+found, including system and built-in configurations.",
+                    "yellow",
+                )
+            )
         else:
-            print("No report configurations found.")
+            print(utils.printc("RESP", "No report configurations found.", "yellow"))
 
-        recipient_name = input("Enter the report recipient name: ")
-        recipient_email = input("Enter the report recipient email address: ")
+        recipient_name = input(
+            utils.printc("INPUT", "Enter the report recipient name: ", "blue")
+        )
+        recipient_email = input(
+            utils.printc("INPUT", "Enter the report recipient email address: ", "blue")
+        )
 
         # dates must be ISO-8601 compliant
-        report_config_name = f"sdk_chrisr_config_{str(uuid.uuid4())}"
+        report_config_name = f"sdk_report_config_{str(uuid.uuid4())}"
 
-        print("Report configuration will be as follows:")
+        print(utils.printc("INFO", "Report configuration will be as follows:", "green"))
         print(f"   Configuration name: {report_config_name}")
         print(f"   Start time: {start_time}")
         print(f"   End time: {end_time}")
-        print("   Report interval: Yearly")
+        print("   Report interval: Yearly\n")
 
         # report format: PDF or CSV
         PDF = ReportFormat.PDF
@@ -179,7 +230,11 @@ v4 Python SDK.",
             default_section_entity_type=EntityType.VM,
         )
 
-        print("Submitting report config creation request ...")
+        print(
+            utils.printc(
+                "SDK", "Submitting report config creation request ...", "magenta"
+            )
+        )
 
         create_new_config = reporting_instance.create_report_config(
             async_req=False, body=new_config
@@ -196,7 +251,11 @@ v4 Python SDK.",
             poll_timeout=1,
         )
 
-        print("Report config created.")
+        print(
+            utils.printc(
+                "RESP", f"Report config named {report_config_name} created.\n", "yellow"
+            )
+        )
 
     except ReportingException as reporting_exception:
         print(
