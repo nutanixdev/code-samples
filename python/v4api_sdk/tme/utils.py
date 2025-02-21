@@ -7,6 +7,8 @@ Requires Prism Central 2024.1 or later, AOS 6.8 or later
 
 import time
 import urllib3
+import argparse
+import getpass
 from dataclasses import dataclass
 from timeit import default_timer as timer
 
@@ -14,6 +16,7 @@ import ntnx_prism_py_client
 from ntnx_prism_py_client import ApiClient as PrismClient
 from ntnx_prism_py_client import Configuration as PrismConfiguration
 
+from termcolor import colored,cprint
 
 @dataclass
 class Config:
@@ -34,7 +37,7 @@ class Utils:
 
     prism_config: PrismConfiguration
 
-    def __init__(self, pc_ip: str, username: str, password: str):
+    def __init__(self, pc_ip: str = "", username: str = "", password: str = ""):
         """
         class constructor
         create reusable instances of Prism connections (etc)
@@ -52,6 +55,42 @@ class Utils:
             api_client=self.prism_client
         )
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+    def printc(self, level: str = "INFO", text: str = "", color: str = ""):
+        return(f"[%s] %s" % (colored(level, color), text))
+
+    def get_environment(self):
+        """
+        setup the command line parameters
+        for this example 4 parameters are required
+        - the Prism Central IP address or FQDN
+        - the Prism Central username; the script will prompt for the user's password
+          so that it never needs to be stored in plain text
+        """
+        parser = argparse.ArgumentParser()
+        parser.add_argument(
+            "--pc_ip", required=True, help="Prism Central IP address or FQDN"
+        )
+        parser.add_argument("--username", required=True, help="Prism Central username")
+        parser.add_argument(
+            "-p", "--poll", help="Time between task polling, in seconds", default=1
+        )
+        args = parser.parse_args()
+
+        # get the cluster password
+        cluster_password = getpass.getpass(prompt=self.printc("INPUT", "Enter your Prism Central password: ", "blue"), stream=None)
+
+            # make sure the user enters a password
+        if not cluster_password:
+            while not cluster_password:
+                print(self.printc("ERR", "Password cannot be empty. Enter a password or Ctrl-C/Ctrl-D to exit.", "red"))
+                cluster_password = getpass.getpass(prompt=self.printc("INPUT", "Enter your Prism Central password: ", "blue"), stream=None
+                )
+
+        config = Config(pc_ip=args.pc_ip,
+                        pc_username=args.username,
+                        pc_password=cluster_password)
+        return config
 
     def get_task(self, ext_id: str):
         """
