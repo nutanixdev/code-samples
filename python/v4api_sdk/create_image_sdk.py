@@ -18,7 +18,7 @@ import ntnx_clustermgmt_py_client
 from ntnx_clustermgmt_py_client import ApiClient as ClusterClient
 from ntnx_clustermgmt_py_client import Configuration as ClusterConfiguration
 
-from tme import Utils
+from tme.utils import Utils
 
 
 def main():
@@ -46,8 +46,7 @@ def main():
 
     # get the cluster password
     cluster_password = getpass.getpass(
-            prompt="Please enter your Prism Central \
-                    password: ",
+            prompt="Please enter your Prism Central password: ",
                     stream=None,
                     )
 

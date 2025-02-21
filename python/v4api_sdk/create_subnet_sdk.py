@@ -36,8 +36,8 @@ from ntnx_prism_py_client import ApiClient as PrismClient
 from ntnx_prism_py_client.rest import ApiException as PrismException
 
 
-from tme import Utils
-from tme import Config
+from tme.utils import Utils
+from tme.utils import Config
 
 
 def confirm_entity(api, client, entity_name: str, exclusions: list) -> str:
@@ -297,7 +297,7 @@ Check the format then try again."
 
     # did the user say Yes to creating the subnet?
     if confirm_create:
-        networking_instance = ntnx_networking_py_client.api.SubnetApi(
+        networking_instance = ntnx_networking_py_client.api.SubnetsApi(
             api_client=networking_client
         )
 
