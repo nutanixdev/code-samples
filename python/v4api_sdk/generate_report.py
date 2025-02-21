@@ -3,10 +3,10 @@ Use the Nutanix v4 API SDKs to demonstrate AI Ops report creation
 Requires Prism Central 2024.3 or later and AOS 6.9 or later
 """
 
-import urllib3
 import uuid
 import sys
 from pprint import pprint
+import urllib3
 
 from ntnx_opsmgmt_py_client.rest import ApiException as ReportingException
 from ntnx_opsmgmt_py_client import Report
@@ -36,16 +36,34 @@ def main():
 
     # prompt for report start and end time
     # include sensible defaults
-    print(utils.printc("INFO", "You will now be prompted for the report start and end times.", "green"))
-    print(utils.printc("INFO", "Press enter at each prompt if you want to accept the defaults.", "green"))
+    print(
+        utils.printc(
+            "INFO",
+            "You will now be prompted for the report start and end times.",
+            "green",
+        )
+    )
+    print(
+        utils.printc(
+            "INFO",
+            "Press enter at each prompt if you want to accept the defaults.",
+            "green",
+        )
+    )
     print(utils.printc("INFO", f"Default start time: {default_start}", "green"))
     print(utils.printc("INFO", f"Default end time: {default_end}", "green"))
 
-    start_time = input(utils.printc("INPUT", "Enter the report start time in ISO-8601 format: ", "blue"))
+    start_time = input(
+        utils.printc(
+            "INPUT", "Enter the report start time in ISO-8601 format: ", "blue"
+        )
+    )
     if not start_time:
         start_time = default_start
         print(utils.printc("INFO", "Default start time used ...", "green"))
-    end_time = input(utils.printc("INPUT", "Enter the report end time in ISO-8601 format: ", "blue"))
+    end_time = input(
+        utils.printc("INPUT", "Enter the report end time in ISO-8601 format: ", "blue")
+    )
     if not end_time:
         end_time = default_end
         print(utils.printc("INFO", "Default end time used ...", "green"))
@@ -63,23 +81,54 @@ def main():
             api_client=reporting_client.api_client
         )
 
-        print(utils.printc("INFO", "This demo uses the Nutanix v4 API `opsmgmt` namespace's reporting APIs to create an AIOps report from an existing report configuration. You will now be prompted for some report-specific details.", "green"))
+        print(
+            utils.printc(
+                "INFO",
+                "This demo uses the Nutanix v4 API `opsmgmt` namespace's \
+reporting APIs to create an AIOps report from an existing \
+report configuration. You will now be prompted for some \
+report-specific details.",
+                "green",
+            )
+        )
 
         # get a list of existing report configurations
-        print(utils.printc("SDK", "Building list of existing user-defined report configurations ...", "magenta"))
+        print(
+            utils.printc(
+                "SDK",
+                "Building list of existing user-defined \
+report configurations ...",
+                "magenta",
+            )
+        )
 
-        config_list = reporting_instance.list_report_configs(async_req=False, _filter="isSystemDefined eq null", _limit=100)
-
-        # config_list = reporting_instance.list_report_configs(async_req=False)
+        config_list = reporting_instance.list_report_configs(
+            async_req=False, _filter="isSystemDefined eq null", _limit=100
+        )
 
         if config_list.data:
-            print(utils.printc("RESP", f"{len(config_list.data)} user-defined report configurations found.", "yellow"))
+            print(
+                utils.printc(
+                    "RESP",
+                    f"{len(config_list.data)} user-defined \
+report configurations found.",
+                    "yellow",
+                )
+            )
         else:
-            print(utils.printc("RESP", "No report configurations found. Exiting ...", "yellow"))
+            print(
+                utils.printc(
+                    "RESP", "No report configurations found. Exiting ...", "yellow"
+                )
+            )
             sys.exit()
 
-        recipient_name = input(utils.printc("INPUT", "Enter the report recipient name: ", "blue"))
-        recipient_email = input(utils.printc("INPUT", "Enter the report recipient email address: ", "blue"))
+        recipient_name = input(
+            utils.printc("INPUT", "Enter the report recipient name: ", "blue")
+        )
+        recipient_email = input(
+            utils.printc("INPUT", "Enter the report recipient email address: ", "blue")
+        )
 
         user_configs = []
         for report_config in config_list.data:
@@ -88,7 +137,14 @@ def main():
             )
         print(utils.printc("INFO", "Available report configurations:", "green"))
         pprint(user_configs)
-        config_ext_id = input(utils.printc("INPUT", "Enter the ext_id of the report configuration to use for this report: ", "blue"))
+        config_ext_id = input(
+            utils.printc(
+                "INPUT",
+                "Enter the ext_id of the report configuration \
+to use for this report: ",
+                "blue",
+            )
+        )
 
         report_name = f"sdk_new_report_{str(uuid.uuid4())}"
 
