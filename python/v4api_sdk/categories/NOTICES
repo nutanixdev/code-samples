@@ -1,0 +1,7 @@
+Dependencies and Licenses
+-------------------------
+
+urllib3: MIT License, https://github.com/urllib3/urllib3/blob/main/LICENSE.txt
+ntnx-clustermgmt-py-client: Nutanix Proprietary License, https://developers.nutanix.com/license
+ntnx-prism-py-client: Nutanix Proprietary License, https://developers.nutanix.com/license
+ntnx-vmm-py-client: Nutanix Proprietary License, https://developers.nutanix.com/license

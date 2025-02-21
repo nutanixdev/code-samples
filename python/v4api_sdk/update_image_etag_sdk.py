@@ -17,7 +17,7 @@ from ntnx_vmm_py_client.rest import ApiException as VMMException
 from ntnx_prism_py_client import ApiClient as PrismClient
 from ntnx_prism_py_client import Configuration as PrismConfiguration
 
-from tme import Utils
+from tme.utils import Utils
 
 """
 suppress warnings about insecure connections
