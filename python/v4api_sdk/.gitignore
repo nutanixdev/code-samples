@@ -13,3 +13,4 @@ dist/
 eslint.config.mjs
 ntnx_opsmgmt_py_client/
 test.py
+tme/test*
