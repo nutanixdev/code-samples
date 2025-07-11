@@ -7,7 +7,7 @@ Date: May 2025
 
 # pylint: disable=line-too-long
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import sys
 import urllib3
 
@@ -83,8 +83,12 @@ def main():
 
         # setup the stats request parameters
         # this example is AEST
-        start_time = "2025-05-06T00:00:00.000+10:00"
-        end_time = "2025-05-06T00:00:30.000+10:00"
+
+        # start time is "now" minus 5 minutes
+        # default in this demo is UTC+10 i.e. AEST
+        start_time = (datetime.now() - timedelta(minutes=5)).strftime("%Y-%m-%dT%H:%M:%S+10:00")
+        # end time is "now"
+        end_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S+10:00")
 
         start_object = datetime.fromisoformat(start_time)
         end_object = datetime.fromisoformat(end_time)
@@ -96,12 +100,16 @@ def main():
         print(
             utils.printc(
                 "INFO",
-                "This demo script will use the following start and end times:",
+                "This demo script will use the following spec:",
                 "blue",
             )
         )
-        print(f"    {start_time}")
-        print(f"    {end_time}")
+        print(f"    Start time: {start_time}")
+        print(f"    End time: {end_time}")
+        print("    VM extId will be included in the response")
+        print("    5 minute reporting period")
+        print("    30 second reporting interval")
+        print("    AVG downsampling operator type")
 
         print(utils.printc("INFO", "Retrieving VM stats ...", "blue"))
         stats = stats_instance.get_vm_stats_by_id(
@@ -117,13 +125,16 @@ def main():
         display_stats = utils.confirm(
             utils.printc(
                 "INPUT",
-                f"{len(stats.data.stats)} stats objects found.  Display response now?  Note: Stats responses can be very large.",
+                f"{len(stats.data.stats)} stats object(s) found.  Display response now?  Note: Stats responses can be very large.",
                 "blue",
             )
         )  # noqa
 
         if display_stats:
-            print(stats.data.stats[0].hypervisor_cpu_usage_ppm)
+            print(stats.data)
+            # example of showing the first hypervisor CPU usage statistic only
+            # commented for demo purposes
+            # print(stats.data.stats[0].hypervisor_cpu_usage_ppm)
 
     except VMMException as vmm_exception:
         print(

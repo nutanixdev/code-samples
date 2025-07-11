@@ -179,7 +179,7 @@ password: ",
         ["Unnamed"],
     )
     subnet_ext_id = confirm_entity(
-        ntnx_networking_py_client.api.SubnetApi, networking_client, "subnet", []
+        ntnx_networking_py_client.api.SubnetsApi, networking_client, "subnet", []
     )
     image_ext_id = confirm_entity(
         ntnx_vmm_py_client.api.ImagesApi, vmm_client, "image", []
