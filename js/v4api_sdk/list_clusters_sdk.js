@@ -9,7 +9,7 @@
  *
  * Requirements:
  *
- * Prism Central pc.2024.1 or later and AOS 6.8 or later
+ * Prism Central 7.3 or later and AOS 7.3 later
 */
 
 const sdk = require("@nutanix-api/clustermgmt-js-client/dist/lib/index");
