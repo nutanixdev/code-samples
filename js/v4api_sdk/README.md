@@ -9,7 +9,7 @@ These examples demonstrate use of the Nutanix `vmm` and `clustermgmt` JS API lib
 Example instructions are for a Linux or Mac OS X environment.
 
 - Install Node.js as per the [official documentation](https://nodejs.org/en/download/)
-- Add the [Nutanix clustermgmt JS Client](https://www.npmjs.com/package/@nutanix-api/clustermgmt-js-client) as a project dependency; for this demo we are using the `clustermgmt` SDK as it provides access to Cluster APIs:
+- Install dependencies; this demo uses the `vmm` and `clustermgmt` SDKs:
 
   ```
   npm install @nutanix-api/clustermgmt-js-client
