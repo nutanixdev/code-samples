@@ -2,15 +2,13 @@
 
 A collection of code samples designed for distribution via the [Nutanix Developer Portal](https://www.nutanix.dev).
 
-**Note**: The structure of this repository changed on June 6th 2019.  Please update any existing bookmarks you may have saved.
-
-Please feel free to use these for your own environments if you find them useful.
+See this repository's [`LICENSE`](https://github.com/nutanixdev/code-samples/blob/master/LICENSE) for usage info.
 
 ## Assumptions
 
 Detailed instructions on how to setup a development/testing environment are beyond the scope of this repo and the scripts contained within it.
 
-Each script language covered in this repository has an accompanying readme file that suggests how the environment should be setup, although individual preferences will nearly always override those suggestions.
+Each script language covered in this repository has an accompanying readme file that suggests how the environment should be setup, although individual preferences may override those suggestions.
 
 ## Sections
 
@@ -24,7 +22,7 @@ Each script language covered in this repository has an accompanying readme file 
 
 ## License & Usage
 
-Please see the `LICENSE` file distributed with this repository.
+See this repository's [LICENSE](https://github.com/nutanixdev/code-samples-private/blob/master/LICENSE) for usage info.
 
 For full terms and conditions, please see [Nutanix Terms of Use](https://www.nutanix.com/legal/terms-of-use).
 
@@ -32,8 +30,10 @@ For full terms and conditions, please see [Nutanix Terms of Use](https://www.nut
 
 These scripts are *unofficial* and are not supported or actively maintained by Nutanix in any way.
 
-In addition, please also be advised that these scripts may contain code that does not follow best practices.  Please check through each script to ensure the configuration suits your requirements.
+In addition, be advised these scripts are for demonstration purposes only and may contain code that does not follow best practices.  Please check script to ensure the configuration suits your requirements.
 
 **Changes will be required before these scripts can be used in production environments.**
 
-See the `.disclaimer` file distributed with this repository.
+## Disclaimer
+
+See the [`.disclaimer`](https://github.com/nutanixdev/code-samples/blob/master/.disclaimer) file distributed with this repository.
