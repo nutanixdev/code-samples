@@ -1,6 +1,6 @@
 # Nutanix v4 SDK Sample Script: JS SDK
 
-Code sample to demonstrate use of the new Nutanix v4 APIs via JS SDK.
+Code sample to demonstrate use of the Nutanix v4 APIs via JS SDK.
 
 This example demonstrates use of the Nutanix `clustermgmt` JS API library
 
