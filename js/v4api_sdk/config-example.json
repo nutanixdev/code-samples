@@ -3,5 +3,7 @@
   "pc_port": "9440",
   "username": "<prism_central_username_here>",
   "password": "<prism_central_password_here>",
-  "debug": false
+  "debug": false,
+  "image_url": "https://dl.rockylinux.org/pub/rocky/10/images/x86_64/Rocky-10-GenericCloud-Base.latest.x86_64.qcow2",
+  "cluster_extid": "<cluster_extid_here>"
 }
