@@ -21,3 +21,7 @@ This code sample demonstrates use of the Nutanix v4 APIs to perform a simple vir
   ```
   ./update_vm.ps1
   ```
+
+# Screenshot
+
+![Example of demo script running](./screenshot.png "Example of demo script running")
