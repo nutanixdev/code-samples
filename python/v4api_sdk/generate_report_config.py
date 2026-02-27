@@ -1,14 +1,18 @@
 """
 Use the Nutanix v4 API SDKs to demonstrate AI Ops report configuration creation
-Requires Prism Central 2024.3 or later and AOS 7.0 or later
+Requires Prism Central 7.5 or later and AOS 7.5 or later
+Author: Chris Rasmussen, Senior Technical Marketing Engineer, Nutanix
+Date: February 2026
 """
 
 import uuid
 import urllib3
+from rich import print
 
+import ntnx_opsmgmt_py_client
+from ntnx_opsmgmt_py_client import Configuration as OpsMgmtConfiguration
+from ntnx_opsmgmt_py_client import ApiClient as OpsMgmtClient
 from ntnx_opsmgmt_py_client.rest import ApiException as ReportingException
-# there's no need to import the namespace's configuration and client modules
-# as that is all handled by the tme.ApiClient module
 
 # reporting-specific libraries
 from ntnx_opsmgmt_py_client import ReportConfig, ReportSchedule
@@ -32,14 +36,13 @@ from ntnx_opsmgmt_py_client.models.opsmgmt.v4.config.NotificationPolicy import (
 )
 from ntnx_opsmgmt_py_client.models.opsmgmt.v4.config.Recipient import Recipient
 
-# utilities functions and classes e.g. environment management
+# small library that manages commonly-used tasks across these code samples
 from tme.utils import Utils
-
-# functions and classes for Prism Central connection management
 from tme.apiclient import ApiClient
 
 
 def main():
+
     """
     suppress warnings about insecure connections
     please consider the security implications before
@@ -48,115 +51,74 @@ def main():
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     utils = Utils()
-    config = utils.get_environment()
+    script_config = utils.get_environment()
 
     default_start = "2025-01-01T00:00:00Z"
     default_end = "2025-01-02T00:00:00Z"
 
     # prompt for report start and end time
     # include sensible defaults
-    print(
-        utils.printc(
-            "INFO",
-            "You will now be prompted for the report start and end times.",
-            "green",
-        )
-    )
-    print(
-        utils.printc(
-            "INFO",
-            "Press enter at each prompt to accept \
-the default values.",
-            "green",
-        )
-    )
-    print(utils.printc("INFO", f"Default start time: {default_start}", "green"))
-    print(utils.printc("INFO", f"Default end time: {default_end}", "green"))
+    print("You will now be prompted for the report start and end times.")
+    print("Press enter at each prompt to accept the default values.")
+    print(f"Default start time: {default_start}")
+    print(f"Default end time: {default_end}")
 
-    start_time = input(
-        utils.printc(
-            "INPUT",
-            "Enter the report start time in ISO-8601 \
-format: ",
-            "blue",
-        )
-    )
+    start_time = input("Enter the report start time in ISO-8601 format: ")
     if not start_time:
         start_time = default_start
-        print(utils.printc("INFO", "Default start time used ...", "green"))
-    end_time = input(
-        utils.printc(
-            "INPUT",
-            "Enter the report end time in ISO-8601 \
-format: ",
-            "blue",
-        )
-    )
+        print("Default start time used ...")
+    end_time = input("Enter the report end time in ISO-8601 format: ")
     if not end_time:
         end_time = default_end
-        print(utils.printc("INFO", "Default end time used ...", "green"))
+        print("Default end time used ...")
 
     try:
-        # setup the instance of our ApiClient class
-        # this handles all Prism Central connections and provides
-        # access to the chosen namespace's APIs, when required
-        # this demo requires the OpsMgmt namespace i.e. ntnx_opsmgmt_py_client
-        reporting_client = ApiClient(config=config, sdk_module="ntnx_opsmgmt_py_client")
+        
+        opsmgmt_config = OpsMgmtConfiguration()
 
-        # with the client setup, specify the Nutanix v4 API we want to use
-        # this section requires use of the ReportConfigApi
-        reporting_instance = reporting_client.imported_module.api.ReportConfigApi(
-            api_client=reporting_client.api_client
-        )
+        for config in [
+            opsmgmt_config,
+        ]:
+            config.host = script_config.pc_ip
+            config.username = script_config.pc_username
+            config.password = script_config.pc_password
+            config.verify_ssl = False
 
-        print(
-            utils.printc(
-                "INFO",
-                "This demo uses the Nutanix v4 API `opsmgmt` \
+        opsmgmt_client = OpsMgmtClient(configuration=opsmgmt_config)
+
+        for client in [
+            opsmgmt_client,
+        ]:
+            client.add_default_header(
+                header_name="Accept-Encoding", header_value="gzip, deflate, br"
+            )
+
+        opsmgmt_instance = ntnx_opsmgmt_py_client.api.ReportConfigApi(api_client=opsmgmt_client)
+
+        print("This demo uses the Nutanix v4 API `opsmgmt` \
 namespace's reporting APIs to create an \
 AIOps report configuration. The new report \
 configuration can be used to run a manual \
 or scheduled report. You will now be \
-prompted for some report-specific details.",
-                "green",
-            )
-        )
+prompted for some report-specific details.")
 
         # get a list of existing report configurations
-        print(
-            utils.printc(
-                "SDK",
-                "Building list of existing report \
-configurations ...",
-                "magenta",
-            )
-        )
+        print("Building list of existing report configurations ...")
 
-        config_list = reporting_instance.list_report_configs(async_req=False)
+        config_list = opsmgmt_instance.list_report_configs(async_req=False)
 
         if config_list.data:
-            print(
-                utils.printc(
-                    "RESP",
-                    f"{len(config_list.data)} report configurations \
-found, including system and built-in configurations.",
-                    "yellow",
-                )
-            )
+            print(f"{len(config_list.data)} report configurations found, including system and built-in configurations.")
         else:
-            print(utils.printc("RESP", "No report configurations found.", "yellow"))
+            print("No report configurations found.")
 
-        recipient_name = input(
-            utils.printc("INPUT", "Enter the report recipient name: ", "blue")
-        )
-        recipient_email = input(
-            utils.printc("INPUT", "Enter the report recipient email address: ", "blue")
-        )
+        recipient_name = input("Enter the report recipient name: ")
+        recipient_email = input("Enter the report recipient email address: ")
 
         # dates must be ISO-8601 compliant
         report_config_name = f"sdk_report_config_{str(uuid.uuid4())}"
 
-        print(utils.printc("INFO", "Report configuration will be as follows:", "green"))
+        print("Report configuration will be as follows:")
         print(f"   Configuration name: {report_config_name}")
         print(f"   Start time: {start_time}")
         print(f"   End time: {end_time}")
@@ -230,13 +192,9 @@ v4 Python SDK.",
             default_section_entity_type=EntityType.VM,
         )
 
-        print(
-            utils.printc(
-                "SDK", "Submitting report config creation request ...", "magenta"
-            )
-        )
+        print("Submitting report config creation request ...")
 
-        create_new_config = reporting_instance.create_report_config(
+        create_new_config = opsmgmt_instance.create_report_config(
             async_req=False, body=new_config
         )
 
@@ -245,17 +203,12 @@ v4 Python SDK.",
             task_ext_id=reporting_ext_id,
             prefix="",
             task_name="Report config creation",
-            pc_ip=config.pc_ip,
-            username=config.pc_username,
-            password=config.pc_password,
-            poll_timeout=1,
+            pc_ip=script_config.pc_ip,
+            username=script_config.pc_username,
+            password=script_config.pc_password,
         )
 
-        print(
-            utils.printc(
-                "RESP", f"Report config named {report_config_name} created.\n", "yellow"
-            )
-        )
+        print(f"Report config named {report_config_name} created.\n")
 
     except ReportingException as reporting_exception:
         print(

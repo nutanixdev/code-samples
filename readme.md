@@ -1,6 +1,6 @@
-# Nutanix Developer Portal Code Samples
+# Nutanix Code Samples
 
-A collection of code samples designed for distribution via the [Nutanix Developer Portal](https://www.nutanix.dev).
+A collection of code samples designed for distribution via [Nutanix.dev](https://www.nutanix.dev).
 
 See this repository's [`LICENSE`](https://github.com/nutanixdev/code-samples/blob/master/LICENSE) for usage info.
 
@@ -12,7 +12,9 @@ Each script language covered in this repository has an accompanying readme file 
 
 ## Sections
 
-- **python**: Python scripts based on Python >=3.7
+- **python**: Python scripts based on Python >=3.9
+  - v4api_sdk: Nutanix v4 Python SDK code samples
+  - v4api_client: Nutanix v4 REST API code samples i.e. non-SDK using Python `requests`
 - **powershell**: Windows PowerShell scripts, based on PowerShell >= 5.1
 - **shell**: Bash scripts to run in a Linux terminal (please note that the Windows 10 Bash Shell has not been tested with these scripts!)
 - **csharp**: Single-file/script Microsoft C# applications, typically run in the console

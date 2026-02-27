@@ -2,7 +2,7 @@
 
 Code sample to demonstrate use of the Nutanix v4 APIs via Go SDK.
 
-Requires Prism Central 7.3 or later and AOS 7.3 or later
+Requires Prism Central 7.5 or later and AOS 7.5 or later
 
 ## Usage
 
@@ -20,9 +20,11 @@ Example instructions are for a Linux or Mac OS X environment.
 
   ```
   go mod init nutanixdev/v4api_sdk
-  go get github.com/nutanix/ntnx-api-golang-clients/vmm-go-client/v4/...@v4.1.1
+  go get github.com/nutanix/ntnx-api-golang-clients/vmm-go-client/v4/...@v4.2.1
   go get golang.org/x/term
   ```
+
+  ![Environment setup](./setup.png "Environment setup")
 
 - Run script:
 

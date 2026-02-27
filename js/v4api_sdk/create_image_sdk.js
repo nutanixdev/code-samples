@@ -8,7 +8,9 @@
  *
  * Requirements:
  *
- * Prism Central 7.3 or later and AOS 7.3 later
+ * Prism Central 7.5 or later and AOS 7.5 later
+ * 
+ * See this directory's README.md for environment setup instructions.
 */
 
 const sdk = require("@nutanix-api/vmm-js-client/dist/lib/index");

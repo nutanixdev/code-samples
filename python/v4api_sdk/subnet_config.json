@@ -7,36 +7,36 @@
 	"is_external": false,
 	"is_advanced_networking": true,
 	"subnet_prefix": 25,
-	"subnet_ip_address": "10.38.141.0",
+	"subnet_ip_address": "10.0.0.0",
 	"subnet_ip_prefix": 32,
 	"dhcp": {
 		"dns_servers": [
 			{
 				"prefix_length": 32,
-				"ip_address": "10.42.194.10"
+				"ip_address": "10.0.0.10"
 			},
 			{
 				"prefix_length": 32,
-				"ip_address": "10.42.196.10"
+				"ip_address": "10.0.0.11"
 		        }
 		],
 	        "dhcp_server": {
 			"prefix_length": 32,
-			"ip_address": "10.38.141.126"
+			"ip_address": "10.0.0.12"
 		},
 		"dhcp_pool": {
 			"start_ip": {
 				"prefix_length": 32,
-				"ip_address": "10.38.141.20"
+				"ip_address": "10.0.0.100"
 			},
 			"end_ip": {
 				"prefix_length": 32,
-				"ip_address": "10.38.141.125"
+				"ip_address": "10.0.0.200"
 			}
 		}
 	},
 	"gateway": {
 		"prefix_length": 32,
-		"ip_address": "10.38.141.1"
+		"ip_address": "10.0.0.1"
 	}
 }
