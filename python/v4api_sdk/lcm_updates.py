@@ -1,7 +1,9 @@
 """
 Use the Nutanix v4 API SDKs to gather a list of upgradeable LCM entities,
 then generate an LCM update plan
-Requires Prism Central pc.2024.1 or later and AOS 6.8 or later
+Requires Prism Central 7.5 or later and AOS 7.5 or later
+Author: Chris Rasmussen, Senior Technical Marketing Engineer, Nutanix
+Date: February 2026
 """
 
 import getpass
@@ -21,12 +23,34 @@ from ntnx_lifecycle_py_client.rest import ApiException as LCMException
 # required for building the list of LCM components that can be updated
 from ntnx_lifecycle_py_client.models.lifecycle.v4.common.PrechecksSpec import PrechecksSpec
 from ntnx_lifecycle_py_client.models.lifecycle.v4.resources.RecommendationSpec import RecommendationSpec
+from ntnx_lifecycle_py_client.models.lifecycle.v4.resources.NotificationsSpec import NotificationsSpec
 from ntnx_lifecycle_py_client.models.lifecycle.v4.common.EntityUpdateSpec import EntityUpdateSpec
 from ntnx_lifecycle_py_client.models.lifecycle.v4.common.EntityType import EntityType
 from ntnx_lifecycle_py_client.models.lifecycle.v4.common.UpgradeSpec import UpgradeSpec
+from ntnx_lifecycle_py_client.models.lifecycle.v4.common.SystemAutoMgmtFlag import SystemAutoMgmtFlag
+from ntnx_lifecycle_py_client.api import InventoryApi
+from ntnx_lifecycle_py_client.api import EntitiesApi
+from ntnx_lifecycle_py_client.api import RecommendationsApi
+from ntnx_lifecycle_py_client.api import NotificationsApi
+from ntnx_lifecycle_py_client.api import UpgradesApi
+
+# required for getting cluster details
+import ntnx_clustermgmt_py_client
+from ntnx_clustermgmt_py_client import Configuration as ClusterConfiguration
+from ntnx_clustermgmt_py_client import ApiClient as ClusterClient
+from ntnx_clustermgmt_py_client.rest import ApiException as ClusterException
+from ntnx_clustermgmt_py_client.api import ClustersApi
+
+# required for getting task details
+import ntnx_prism_py_client
+from ntnx_prism_py_client import Configuration as PrismConfiguration
+from ntnx_prism_py_client import ApiClient as PrismClient
+from ntnx_prism_py_client.rest import ApiException as PrismException
+from ntnx_prism_py_client.api import TasksApi
 
 # small library that manages commonly-used tasks across these code samples
-from tme import Utils
+from tme.utils import Utils
+from tme.apiclient import ApiClient
 
 
 def main():
@@ -37,58 +61,49 @@ def main():
     """
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    """
-    setup the command line parameters
-    for this example only two parameters are required
-    - the Prism Central IP address or FQDN
-    - the Prism Central username; the script will prompt for the user's
-      password so that it never needs to be stored in plain text
-    - the time in seconds between task polling
-    """
-    parser = argparse.ArgumentParser()
-    parser.add_argument("pc_ip", help="Prism Central IP address or FQDN")
-    parser.add_argument("username", help="Prism Central username")
-    parser.add_argument(
-        "-p", "--poll", help="Time between task polling, in seconds", default=1
-    )
-    args = parser.parse_args()
-
-    # get the cluster password
-    cluster_password = getpass.getpass(
-        prompt="Enter your password: ",
-        stream=None,
-    )
-
-    # grab the command-line parameters from the args object
-    pc_ip = args.pc_ip
-    username = args.username
-    poll_timeout = args.poll
-
-    # verify the user has entered a password
-    if not cluster_password:
-        while not cluster_password:
-            print(
-                "Password cannot be empty.  \
-    Enter a password or Ctrl-C/Ctrl-D to exit."
-            )
-            cluster_password = getpass.getpass(
-                prompt="Enter your password: ", stream=None
-            )
-
-    # build the connection configuration
-    lcm_config = LCMConfiguration()
-    lcm_config.host = pc_ip
-    lcm_config.username = username
-    lcm_config.password = cluster_password
-    lcm_config.verify_ssl = False
+    utils = Utils()
+    config = utils.get_environment()
 
     try:
+
+        # build the configurations
+        lcm_config = LCMConfiguration()
+        cluster_config = ClusterConfiguration()
+        prism_config = PrismConfiguration()
+
+        for configuration in [lcm_config, cluster_config, prism_config]:
+            configuration.host = config.pc_ip
+            configuration.username = config.pc_username
+            configuration.password = config.pc_password
+            configuration.verify_ssl = False
+
         # create utils instance for re-use later
-        utils = Utils(pc_ip=pc_ip, username=username, password=cluster_password)
+        utils = Utils(pc_ip=config.pc_ip, username=config.pc_username, password=config.pc_password)
+
+        # build the API clients
         lcm_client = LCMClient(configuration=lcm_config)
-        lcm_client.add_default_header(
-            header_name="Accept-Encoding", header_value="gzip, deflate, br"
-        )
+        cluster_client = ClusterClient(configuration=cluster_config)
+        prism_client = PrismClient(configuration=prism_config)
+
+        for client in [lcm_client, cluster_client, prism_client]:
+            client.add_default_header(
+                header_name="Accept-Encoding", header_value="gzip, deflate, br"
+            )
+
+        # list clusters
+        cluster_instance = ClustersApi(api_client=cluster_client)
+        print("Getting cluster list ...")
+
+        # option 1 - filter by specific cluster name
+        # cluster_list = cluster_instance.list_clusters(async_req=False, _filter="name eq 'Dev'")
+
+        # option 2 - filter by Prism Central clusters only
+        cluster_list = cluster_instance.list_clusters(async_req=False, _filter="config/clusterFunction/any(a:a eq Clustermgmt.Config.ClusterFunctionRef'PRISM_CENTRAL')")
+
+        # get the cluster extid
+        # some LCM APIs support the user of a specific cluster ID
+        cluster_extid = cluster_list.data[0].ext_id
+        cluster_name = cluster_list.data[0].name
 
         # the confirm function simply asks for a yes/NO confirmation before
         # continuing with the specified action
@@ -98,9 +113,9 @@ environment configuration."
         )
         if run_inventory:
             # start an LCM inventory
-            lcm_instance = ntnx_lifecycle_py_client.api.InventoryApi(api_client=lcm_client)
+            lcm_instance = InventoryApi(api_client=lcm_client)
             print("Starting LCM inventory ...")
-            inventory = lcm_instance.perform_inventory(async_req=False)
+            inventory = lcm_instance.perform_inventory(async_req=False, X_Cluster_id=cluster_extid)
 
             # grab the unique identifier for the LCM inventory task
             inventory_task_ext_id = inventory.data.ext_id
@@ -110,7 +125,6 @@ environment configuration."
                 pc_ip=utils.prism_config.host,
                 username=utils.prism_config.username,
                 password=utils.prism_config.password,
-                poll_timeout=poll_timeout
             )
             print(f"Inventory duration: {inventory_duration}.")
         else:
@@ -119,126 +133,116 @@ environment configuration."
 
         # gather a list of supported entities
         # this will be used to show human-readable update info shortly
-        lcm_instance = ntnx_lifecycle_py_client.api.EntitiesApi(api_client=lcm_client)
+        lcm_instance = EntitiesApi(api_client=lcm_client)
         print("Getting Supported Entity list ...")
-        entities = lcm_instance.list_entities(async_req=False)
+        entities = lcm_instance.list_entities(async_req=False, X_Cluster_Id=cluster_extid)
 
         """
         gather LCM update recommendations
-        IMPORTANT NOTE: the way recommendations are collected will change
-        before the v4 LCM APIs and SDKs are released as Generally Available
-        (GA); this script should be used for demonstration purposes only
         """
-        lcm_instance = ntnx_lifecycle_py_client.api.RecommendationsApi(api_client=lcm_client)
-        print("Getting LCM Recommendations ...")
+        lcm_instance = RecommendationsApi(api_client=lcm_client)
+        print("Computing LCM Recommendations ...")
         rec_spec = RecommendationSpec()
 
-        rec_spec.recommendation_spec = RecommendationSpec()
-
-        
-
-        
-
+        print("Checking for SOFTWARE and FIRMWARE")
+        rec_spec.recommendation_spec = [
+                EntityType.SOFTWARE,
+                EntityType.FIRMWARE
+        ]
 
         # specify that this script should only look for available software updates
-        rec_spec.entity_types = ["software"]
-        recommendations = lcm_instance.get_recommendations(
-            async_req=False, body=rec_spec
+        recommendations = lcm_instance.compute_recommendations(
+            async_req=False, body=rec_spec, X_Cluster_Id=cluster_extid
         )
-        update_info = []
-        for rec in recommendations.data["entityUpdateSpecs"]:
-            entity_matches = [
-                entity for entity in entities.data if entity.uuid == rec["entityUuid"]
-            ]
-            if len(entity_matches) > 0:
-                update_info.append(
-                    {
-                        "product_name": entity_matches[0].entity_model,
-                        "version": entity_matches[0].version,
-                        "entity_uuid": entity_matches[0].uuid,
-                    }
-                )
-        print(
-            f"{len(recommendations.data['entityUpdateSpecs'])} software \
-components can be updated:"
-        )
-        pprint(update_info)
 
-        if not update_info:
-            print("No updates available, skipping LCM Update planning.\n")
+        recs_task_id = recommendations.data.ext_id
+        prism_instance = TasksApi(api_client=prism_client)
+        print("Getting Recommendations task ...")
+        recs_task = prism_instance.get_task_by_id(recs_task_id)
+        while recs_task.data.status == "RUNNING":
+            print("Checking Recommendation task status every 5 seconds ...")
+            recs_task = prism_instance.get_task_by_id(recs_task_id)
+            time.sleep(5)
+        completion_value = recs_task.data.completion_details[0].value
+
+        # get recommendation details
+        lcm_instance = RecommendationsApi(api_client=lcm_client)
+        recommendation = lcm_instance.get_recommendation_by_id(completion_value)
+
+        # make sure there are updates available before continuing
+        if recommendation.data.entity_update_specs:
+            entity_details = []
+            lcm_instance = ntnx_lifecycle_py_client.api.EntitiesApi(api_client=lcm_client)
+            for rec in recommendation.data.entity_update_specs:
+                entity = lcm_instance.get_entity_by_id(rec.entity_uuid)
+                entity_details.append({"entity_uuid": entity.data.ext_id, "entity_model": entity.data.entity_model, "to_version": entity.data.target_version})
+            print(f"{len(entity_details)} components can be updated.")
         else:
-            # generate LCM upgrade notifications
-            # note this is the new way of doing this; we previously used PlanApi
-            # for this demo we'll do this for all recommendations returned
-            # in the previous request
-            lcm_instance = ntnx_lifecycle_py_client.api.NotificationsApi(api_client=lcm_client)
-            print("Generating LCM Upgrade Notifications ...")
-            entity_update_specs = EntityUpdateSpecs()
-            entity_update_specs.entity_update_specs = []
-            for recommendation in recommendations.data["entityUpdateSpecs"]:
-                spec = EntityUpdateSpec()
-                spec.entity_uuid = recommendation["entityUuid"]
-                spec.version = recommendation["version"]
-                entity_update_specs.entity_update_specs.append(spec)
-            if len(entity_update_specs.entity_update_specs) > 0:
-                notifications = lcm_instance.gen_upgrade_notifications(async_req=False, body=entity_update_specs)
-                print(
-                    f"{len(notifications.data.upgrade_plan)} upgrade notifications generated:"
-                )
-                pprint(notifications.data.upgrade_plan)
-            else:
-                print("No upgrade notifications available.")
-                sys.exit()
+            print("No updates available, skipping LCM Update planning.")
+            sys.exit()
 
-            # make sure there are entities to update
-            if entity_update_specs.entity_update_specs is not None:
-                print(
-                    f"{len(entity_update_specs.entity_update_specs)} \
-updates available."
-                )
-                # make sure the user wants to install updates
-                install_updates = utils.confirm("Install updates?")
-                if install_updates:
-                    # do the actual update
-                    lcm_instance = ntnx_lifecycle_py_client.api.UpdateApi(
-                        api_client=lcm_client
-                    )
-                    print("Updating software via LCM ...")
-                    update_spec = UpdateSpec()
-                    # configure the update properties, timing etc
-                    update_spec.entity_update_specs = (
-                        entity_update_specs.entity_update_specs
-                    )
-                    # skip the pinned VM prechecks
-                    # WARNING: consider the implications of doing this in production
-                    update_spec.skipped_precheck_flags = ["powerOffUvms"]
-                    update_spec.wait_in_sec_for_app_up = 60
-                    update = lcm_instance.update(async_req=False, body=update_spec)
-                    update_task_ext_id = update.data.ext_id
-                    update_duration = utils.monitor_task(
-                        task_ext_id=update_task_ext_id,
-                        task_name="Update",
-                        pc_ip=utils.prism_config.host,
-                        username=utils.prism_config.username,
-                        password=utils.prism_config.password,
-                        poll_timeout=poll_timeout
-                    )
-                    print(f"Update duration: {update_duration}.")
-                else:
-                    print("Updates cancelled.")
-            else:
-                print(
-                    "No updates available at this time.  Make sure \
-available updates weren't skipped due to development script exclusions."
-                )
+        # compute notifications
+        print("Computing LCM Notifications ...")
+        lcm_instance = NotificationsApi(api_client=lcm_client)
+        notifications_spec = NotificationsSpec()
+        notifications_spec.notifications_spec = recommendation.data.entity_update_specs
+        notifications = lcm_instance.compute_notifications(async_req=False, X_Cluster_Id=cluster_extid, body=notifications_spec)
 
-    except LCMException as lcm_exception:
+        notifications_task_id = notifications.data.ext_id
+        print("Getting Notifications task ...")
+        notifications_task = prism_instance.get_task_by_id(notifications_task_id)
+        while notifications_task.data.status == "RUNNING":
+            print("Checking Notification task status every 5 seconds ...")
+            notifications_task = prism_instance.get_task_by_id(notifications_task_id)
+            time.sleep(5)
+        completion_value = notifications_task.data.completion_details[0].value
+
+        # get notification details
+        notification = lcm_instance.get_notification_by_id(completion_value)
+
+        if notification.data.notifications:
+            print(f"There are {len(notification.data.notifications)} notifications available:\n")
+            for notification_details in notification.data.notifications:
+                print(f"    Class: {notification_details.entity_class}")
+                print(f"    Model: {notification_details.entity_model}")
+                print(f"    Message: {notification_details.details[0].message}\n")
+
+        if utils.confirm("Continue with upgrades?  DO NOT use this demo script in production without modification appropriate for your environment!"):
+            print("Upgrading ...")
+        else:
+            print("Upgrades cancelled ...")
+            sys.exit()
+
+        print("Building Upgrade spec ...")
+        upgrade_spec = UpgradeSpec()
+        upgrade_spec.skipped_precheck_flags = [
+            # power off user VMs, if required
+            SystemAutoMgmtFlag.POWER_OFF_UVMS,
+            # migrate powered off user VMs to other hosts, if required
+            SystemAutoMgmtFlag.MIGRATE_POWERED_OFF_UVMS
+        ]
+        upgrade_spec.entity_update_specs = recommendation.data.entity_update_specs
+        lcm_instance = UpgradesApi(api_client=lcm_client)
+        # start the upgrades
+        # note dry run is only supported in specific circumstances (usually not AHV, with some exceptions)
+        upgrades = lcm_instance.perform_upgrade(async_req=False, X_Cluster_Id=cluster_extid, body=upgrade_spec)
+
+        upgrades_task_id = upgrades.data.ext_id
+        print("Getting Upgrades task ...")
+        upgrades_task = prism_instance.get_task_by_id(upgrades_task_id)
+        while upgrades_task.data.status == "RUNNING":
+            print("Checking Upgrades task status every 5 seconds ...")
+            upgrades_task = prism_instance.get_task_by_id(upgrades_task_id)
+            time.sleep(5)
+
+        print("Done!")
+
+    except (LCMException, ClusterException) as lcm_exception:
         print(
             f"Unable to complete the requested action.  See below for \
 additional details.  \
 Exception details: {lcm_exception}"
         )
-
 
 if __name__ == "__main__":
     main()

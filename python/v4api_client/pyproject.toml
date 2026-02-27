@@ -1,0 +1,22 @@
+[project]
+name = "nutanix-rest-api-samples-private"
+version = "2.0"
+description = "A collection of task-based code samples, scripts and mini applications focused on demonstrating specific Nutanix v4 REST API features."
+readme = "README.md"
+authors = [
+    { name = "Chris Rasmussen", email = "christo.rasmuss@nutanix.com" }
+]
+requires-python = ">=3.9"
+dependencies = [
+    "requests>=2.32.4",
+    "rich>=14.3.2",
+    "termcolor>=3.1.0",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.11.0",
+    "flake8>=7.3.0",
+    "pylint>=3.3.9",
+    "ruff>=0.15.0",
+]

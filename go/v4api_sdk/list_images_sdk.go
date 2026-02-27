@@ -7,7 +7,7 @@
 //
 // Requirements:
 //
-// - Prism Central pc.2024.1 or later and AOS 6.8 or later
+// - Prism Central 7.5 or later and AOS 7.5 or later
 
 package main
 

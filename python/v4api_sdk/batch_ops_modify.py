@@ -1,6 +1,8 @@
 """
 Use the Nutanix v4 API SDKs to demonstrate Prism batch MODIFY operations
-Requires Prism Central 2024.1 or later and AOS 6.8 or later
+Requires Prism Central 7.5 or later and AOS 7.5 or later
+Author: Chris Rasmussen, Senior Technical Marketing Engineer, Nutanix
+Date: February 2026
 """
 
 import getpass
@@ -8,10 +10,11 @@ import argparse
 import sys
 import uuid
 import urllib3
+from rich import print
 
 import ntnx_vmm_py_client
-from ntnx_vmm_py_client import Configuration as VMMConfiguration
-from ntnx_vmm_py_client import ApiClient as VMMClient
+from ntnx_vmm_py_client import Configuration as VmmConfiguration
+from ntnx_vmm_py_client import ApiClient as VmmClient
 from ntnx_vmm_py_client.rest import ApiException as VMMException
 
 import ntnx_prism_py_client
@@ -38,10 +41,13 @@ from ntnx_prism_py_client.models.prism.v4.operations.BatchSpecPayloadMetadataPat
 
 from ntnx_prism_py_client.models.prism.v4.operations.ActionType import ActionType
 
+# small library that manages commonly-used tasks across these code samples
 from tme.utils import Utils
+from tme.apiclient import ApiClient
 
 
 def main():
+   
     """
     suppress warnings about insecure connections
     please consider the security implications before
@@ -49,66 +55,45 @@ def main():
     """
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    """
-    setup the command line parameters
-    for this example only two parameters are required
-    - the Prism Central IP address or FQDN
-    - the Prism Central username; the script will prompt for the user's password
-      so that it never needs to be stored in plain text
-    """
-    parser = argparse.ArgumentParser()
-    parser.add_argument("pc_ip", help="Prism Central IP address or FQDN")
-    parser.add_argument("username", help="Prism Central username")
-    parser.add_argument(
-        "-p", "--poll", help="Time between task polling, in seconds", default=1
-    )
-    args = parser.parse_args()
-
-    # get the cluster password
-    cluster_password = getpass.getpass(
-        prompt="Enter your Prism Central \
-password: ",
-        stream=None,
-    )
-
-    pc_ip = args.pc_ip
-    username = args.username
-    poll_timeout = args.poll
-
-    # make sure the user enters a password
-    if not cluster_password:
-        while not cluster_password:
-            print(
-                "Password cannot be empty.  \
-    Enter a password or Ctrl-C/Ctrl-D to exit."
-            )
-            cluster_password = getpass.getpass(
-                prompt="Enter your Prism Central password: ", stream=None
-            )
+    utils = Utils()
+    script_config = utils.get_environment()
 
     try:
-        # create utils instance for re-use later
-        utils = Utils(pc_ip=pc_ip, username=username, password=cluster_password)
-
+    
+        # create the configuration instance
+        # this per-namespace class manages all Prism Central connection settings
+        vmm_config = VmmConfiguration()
         prism_config = PrismConfiguration()
-        vmm_config = VMMConfiguration()
-        for config in [prism_config, vmm_config]:
-            # create the configuration instances
-            config.host = pc_ip
-            config.username = username
-            config.password = cluster_password
+
+        for config in [vmm_config, prism_config]:
+            config.host = script_config.pc_ip
+            config.port = "9440"
+            config.username = script_config.pc_username
+            config.password = script_config.pc_password
             config.verify_ssl = False
+
+        # create the instance of the ApiClient class
+        vmm_client  = VmmClient(configuration=vmm_config)
+        prism_client = PrismClient(configuration=prism_config)
+
+        for client in [vmm_client, prism_client]:
+            client.add_default_header(
+                header_name="Accept-Encoding", header_value="gzip, deflate, br"
+            )
+
+        # create the API class instances
+        vmm_instance = ntnx_vmm_py_client.api.VmApi(api_client=vmm_client)
+        prism_instance = ntnx_prism_py_client.api.BatchesApi(api_client=prism_client)
 
         # get an existing VM
         # for demo purposes we're filering specific VMs; for your environment
         # you will need to change this filter to suit your needs or specify
         # an exact VM ext_id
-        vmm_client = VMMClient(configuration=vmm_config)
-        vmm_instance = ntnx_vmm_py_client.api.VmApi(api_client=vmm_client)
         print("Building filtered list of existing VMs ...")
         print("Note: By default this will retrieve a maximum of 50 VMs.")
         vm_list = vmm_instance.list_vms(
-            async_req=False, _filter="startswith(name, 'batchdemo')"
+            async_req=False,
+             _filter="startswith(name, 'batchdemo')"
         )
         if vm_list.data:
             print(f"{len(vm_list.data)} VM(s) found:")
@@ -117,17 +102,6 @@ password: ",
         else:
             print("No matching VMs found.  Exiting ...")
             sys.exit()
-
-        # setup the configuration parameters
-        prism_config.host = pc_ip
-        prism_config.username = username
-        prism_config.password = cluster_password
-        prism_config.verify_ssl = False
-        prism_client = PrismClient(configuration=prism_config)
-        prism_client.add_default_header(
-            header_name="Accept-Encoding", header_value="gzip, deflate, br"
-        )
-        batch_instance = ntnx_prism_py_client.api.BatchesApi(api_client=prism_client)
 
         # generate unique ID to ensure image names are always different
         unique_id = uuid.uuid1()
@@ -165,7 +139,7 @@ password: ",
                 metadata=BatchSpecMetadata(
                     action=ActionType.MODIFY,
                     name=f"update_{unique_id}",
-                    uri="/api/vmm/v4.0.b1/ahv/config/vms/{extId}",
+                    uri="/api/vmm/v4.2/ahv/config/vms/{extId}",
                     stop_on_error=True,
                     chunk_size=1,
                 ),
@@ -173,7 +147,7 @@ password: ",
             )
 
             print("Submitting batch operation to update existing VMs ...")
-            batch_response = batch_instance.submit_batch(
+            batch_response = prism_instance.submit_batch(
                 async_req=False, body=batch_spec
             )
 
@@ -182,10 +156,9 @@ password: ",
             utils.monitor_task(
                 task_ext_id=modify_ext_id,
                 task_name="Batch VM Update",
-                pc_ip=pc_ip,
-                username=username,
-                password=cluster_password,
-                poll_timeout=poll_timeout,
+                pc_ip=script_config.pc_ip,
+                username=script_config.pc_username,
+                password=script_config.pc_password,
             )
             print(f"{len(batch_spec_payload_list)} VMs updated.")
         else:

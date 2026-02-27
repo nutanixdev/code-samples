@@ -1,7 +1,8 @@
 """
-Use the Nutanix v4 Python SDK to create a Nutanix Flow
-Network Security Policy
-Requires Prism Central pc.2024.1 or later and AOS 6.8 or later
+Use the Nutanix v4 Python SDK to create a Nutanix Flow Network Security Policy
+Requires Prism Central 7.5 or later and AOS 7.5 or later
+Author: Chris Rasmussen, Senior Technical Marketing Engineer, Nutanix
+Date: February 2026
 """
 
 # disable pylint checks that don't matter for this demo
@@ -12,10 +13,14 @@ import argparse
 import sys
 from pprint import pprint
 import urllib3
+from rich import print
 
 import ntnx_prism_py_client
-import ntnx_microseg_py_client
+from ntnx_prism_py_client import Configuration as PrismConfiguration
+from ntnx_prism_py_client import ApiClient as PrismClient
+from ntnx_prism_py_client.rest import ApiException as PrismException
 
+import ntnx_microseg_py_client
 from ntnx_microseg_py_client import Configuration as MicrosegConfiguration
 from ntnx_microseg_py_client import ApiClient as MicrosegClient
 from ntnx_microseg_py_client.rest import ApiException as MicrosegException
@@ -25,134 +30,30 @@ from ntnx_microseg_py_client.rest import ApiException as MicrosegException
 # before using in a production script
 import ntnx_microseg_py_client.models.microseg.v4.config as v4MicrosegConfig
 
-from ntnx_prism_py_client import Configuration as PrismConfiguration
-from ntnx_prism_py_client import ApiClient as PrismClient
-from ntnx_prism_py_client.rest import ApiException as PrismException
-
-
+# small library that manages commonly-used tasks across these code samples
 from tme.utils import Utils
-from tme import Config
-
-
-def confirm_entity(api, client, entity_name: str) -> str:
-    """
-    make sure the user is selecting the correct entity
-    """
-    instance = api(api_client=client)
-    print(f"Retrieving {entity_name} list ...")
-
-    try:
-        if entity_name == "category":
-            # this filter is specific to this code sample and would need
-            # to be modified before use elsewhere
-            entities = instance.list_categories(
-                async_req=False,
-                _filter="type eq Schema.Enums.CategoryType'USER' and not contains(key, 'Calm')",
-            )
-        else:
-            print(f"{entity_name} is not supported.  Exiting.")
-            sys.exit()
-    except (PrismException, MicrosegException) as ex:
-        print(
-            f"\nAn exception occurred while retrieving the {entity_name} list.\
-  Details:\n"
-        )
-        print(ex)
-        sys.exit()
-    except urllib3.exceptions.MaxRetryError as ex:
-        print(
-            f"Error connecting to {client.configuration.host}.  Check connectivity, then try again.  Details:"
-        )
-        print(ex)
-        sys.exit()
-
-    # do some verification and make sure the user selects
-    # the correct entity
-    found_entities = []
-    for entity in entities.data:
-        found_entities.append(
-            {
-                "description": entity.description,
-                "key": entity.key,
-                "value": entity.value,
-                "ext_id": entity.ext_id,
-            }
-        )
-    print(f"The following categories ({len(found_entities)}) were found.")
-    pprint(found_entities)
-
-    expected_entity_ext_id = input(
-        f"\nPlease enter the ext_id of the selected {entity_name}: "
-    ).lower()
-    matches = [
-        x
-        for x in found_entities
-        if x["ext_id"].lower() == expected_entity_ext_id.lower()
-    ]
-    if not matches:
-        print(
-            f"No {entity_name} was found matching the ext_id \
-{expected_entity_ext_id}.  Exiting."
-        )
-        sys.exit()
-    # get the entity ext_id
-    ext_id = matches[0]["ext_id"]
-    return ext_id
+from tme.apiclient import ApiClient
 
 
 def main():
+    
     """
     suppress warnings about insecure connections
-    consider the security implications before
+    please consider the security implications before
     doing this in a production environment
     """
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    """
-    setup the command line parameters
-    for this example only two parameters are required
-    - the Prism Central IP address or FQDN
-    - the Prism Central username; the script will prompt for
-      the user's password
-      so that it never needs to be stored in plain text
-    """
+    utils = Utils()
+    script_config = utils.get_environment()
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("pc_ip", help="Prism Central IP address or FQDN")
-    parser.add_argument("username", help="Prism Central username")
-    args = parser.parse_args()
-
-    # get the cluster password
-    cluster_password = getpass.getpass(
-        prompt="Please enter your Prism Central \
-password: ",
-        stream=None,
+    input(
+        "This demo creates a Two Environment Isolation Policy in MONITOR \
+mode.  You will now be prompted for the ext_id of the two isolation groups \
+that this policy's rule will apply to.  Note: In the context of this demo \
+Isolation Groups are Prism Central categories; only USER type categories \
+are included in the upcoming list.\n\nPress ENTER to continue.\n"
     )
-
-    # create configuration instance; username, password, PC IP
-    script_config = Config(
-        pc_ip=args.pc_ip, pc_username=args.username, pc_password=cluster_password
-    )
-
-    # create utils instance for re-use later
-    utils = Utils(
-        pc_ip=script_config.pc_ip,
-        username=script_config.pc_username,
-        password=script_config.pc_password,
-    )
-
-    # make sure the user enters a password
-    if not cluster_password:
-        while not cluster_password:
-            print(
-                "Password cannot be empty.  \
-    Please enter a password or Ctrl-C/Ctrl-D to exit."
-            )
-            cluster_password = getpass.getpass(
-                prompt="Please enter your Prism Central \
-password: ",
-                stream=None,
-            )
 
     prism_config = PrismConfiguration()
     microseg_config = MicrosegConfiguration()
@@ -162,46 +63,54 @@ password: ",
         config.username = script_config.pc_username
         config.password = script_config.pc_password
         config.verify_ssl = False
-        config.logger_file = "./create_network_security_policy.log"
 
     prism_client = PrismClient(configuration=prism_config)
     microseg_client = MicrosegClient(configuration=microseg_config)
 
     for client in [prism_client, microseg_client]:
         client.add_default_header(
-            header_name="Accept-Encoding", header_value="gzip, deflate, br"
+            header_name="Accept-Encoding",
+            header_value="gzip, deflate, br"
         )
 
-    input(
-        "This demo creates a Two Environment Isolation Policy in MONITOR \
-mode.  You will now be prompted for the ext_id of the two isolation groups \
-that this policy's rule will apply to.  Note: In the context of this demo \
-Isolation Groups are Prism Central categories; only USER type categories \
-are included in the upcoming list.\n\nPress ENTER to continue."
+    # create the API class instances
+    # prism_instance = ntnx_prism_py_client.api.CategoriesApi(api_client=prism_client)
+
+    # list existing categories
+    # we need to know which categories already exist so the user
+    # can select the categories to use in the new security policy
+    category_list = prism_instance.list_categories(
+        async_req=False,
+        _filter="type eq Prism.Config.CategoryType'USER' and not contains(key, 'Calm')",
     )
 
-    """
-    ask the user to confirm the first isolation group for the new policy
-    """
-    first_group_ext_id = confirm_entity(
-        ntnx_prism_py_client.api.CategoriesApi, prism_client, "category"
+    # list the categories for the user to choose from
+    category_ext_id_list = []
+    for category in category_list.data:
+        print(f"Category key: {category.key}, value: {category.value}, ext_id: {category.ext_id}")
+        category_ext_id_list.append(category.ext_id)
+
+    # get the category IDs from the user
+    first_group_ext_id = input(
+        "\nEnter the ext_id for the first Network Security Policy category: "
+    )
+    second_group_ext_id = input(
+        "Enter the ext_id for the second Network Security Policy category: "
     )
 
-    """
-    ask the user to confirm the second isolation group for the new policy
-    """
-    second_group_ext_id = confirm_entity(
-        ntnx_prism_py_client.api.CategoriesApi, prism_client, "category"
-    )
+    if first_group_ext_id == second_group_ext_id:
+        print("The first and second category ext_id are the same; they must be different for this demo to function as expected.  Exiting.")
+        sys.exit()
+    elif first_group_ext_id not in category_ext_id_list or second_group_ext_id not in category_ext_id_list:
+        print("One of the categories is not in the list of categories found in your Prism Central instance.  Exiting.")
+        sys.exit()
 
     # configure the new policy's specifications
     try:
-        # https://developers.nutanix.com/api/v1/sdk/namespaces/main/microseg/versions/v4.0.a1/languages/python/ntnx_microseg_py_client.models.microseg.v4.config.NetworkSecurityPolicy.html#module-ntnx_microseg_py_client.models.microseg.v4.config.NetworkSecurityPolicy
         try:
             new_policy = v4MicrosegConfig.NetworkSecurityPolicy.NetworkSecurityPolicy(
                 name="v4 SDK Network Security Policy",
-                description="Network security policy created with the \
-Nutanix v4 Flow Management SDKs; for demo purposes only!",
+                description="Network Security Policy via SDK",
                 type=v4MicrosegConfig.SecurityPolicyType.SecurityPolicyType.ISOLATION,
                 state=v4MicrosegConfig.SecurityPolicyState.SecurityPolicyState.MONITOR,
                 rules=[
@@ -241,7 +150,8 @@ Security changes in your environment."
 
         print("\nCreating Network Security Policy ...")
         create_policy = microseg_instance.create_network_security_policy(
-            async_req=False, body=new_policy
+            async_req=False,
+            body=new_policy
         )
 
         task_extid = create_policy.data.ext_id
@@ -251,7 +161,6 @@ Security changes in your environment."
             pc_ip=script_config.pc_ip,
             username=script_config.pc_username,
             password=script_config.pc_password,
-            poll_timeout=1,
             prefix="",
         )
         prism_instance = ntnx_prism_py_client.api.TasksApi(api_client=prism_client)
@@ -262,6 +171,7 @@ Security changes in your environment."
             f"New Network Security Policy named {new_policy.name} has been \
 created with ext_id {new_policy_ext_id}.\n"
         )
+        print("NOTE: The new Network Security Policy has been created in MONITOR mode.")
     else:
         print("Network Security Policy creation cancelled.")
 

@@ -1,7 +1,6 @@
 {
   "dependencies": {
-    "@nutanix-api/clustermgmt-js-client": "^4.1.1",
-    "@nutanix-api/vmm-js-client": "^4.1.1",
-    "superagent": "^10.2.2"
+    "@nutanix-api/clustermgmt-js-client": "^4.2.1",
+    "@nutanix-api/vmm-js-client": "^4.2.1"
   }
 }
