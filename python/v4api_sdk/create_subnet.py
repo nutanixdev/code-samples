@@ -44,7 +44,7 @@ from tme.apiclient import ApiClient
 
 
 def main():
-    
+
     """
     suppress warnings about insecure connections
     please consider the security implications before
@@ -135,16 +135,6 @@ def main():
                                     "prefix_length"
                                 ],
                                 value=config_json["dhcp"]["dns_servers"][0][
-                                    "ip_address"
-                                ],
-                            )
-                        ),
-                        v1CommonConfig.IPAddress.IPAddress(
-                            ipv4=v1CommonConfig.IPv4Address.IPv4Address(
-                                prefix_length=config_json["dhcp"]["dns_servers"][1][
-                                    "prefix_length"
-                                ],
-                                value=config_json["dhcp"]["dns_servers"][1][
                                     "ip_address"
                                 ],
                             )

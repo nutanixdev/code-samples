@@ -17,10 +17,12 @@ dependencies = [
     "ntnx-opsmgmt-py-client==4.0.3",
     "ntnx-prism-py-client==4.2.1",
     "ntnx-vmm-py-client==4.2.1",
+    "ntnx-objects-py-client==4.0.2",
     "requests>=2.32.4",
     "rich>=14.3.2",
     "termcolor>=3.1.0",
     "tme",
+    "boto3>=1.42.59",
 ]
 
 [dependency-groups]
