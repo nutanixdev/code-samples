@@ -5,11 +5,12 @@ Author: Chris Rasmussen, Senior Technical Marketing Engineer, Nutanix
 Date: March 2026
 """
 
+import re
 import sys
 import uuid
 from pprint import pprint
-import urllib3
 import time
+import urllib3
 from rich import print
 import boto3
 from botocore.exceptions import ClientError
@@ -92,6 +93,21 @@ def main():
         )
         iam_instance = ntnx_iam_py_client.api.UsersApi(api_client=iam_client)
 
+        print("""\nThis demo will:
+    - List all AOS clusters registered to the specified Prism Central instance 
+    - List all subnets configured in the selected Prism Element cluster
+    - Collect new Object Store and Bucket names from the user
+    - Prompt for network details to use during Object Store creation
+    - Create a new Object Store based on the specified name
+      - Existing Object Stores will be listed to find existing matches
+    - Create a new Bucket based on the specified name
+      - Existing Buckets will be listed to find existing matches
+    - Create a new user of type Service Account for use with the Nutanix Objects Browser
+      - Existing user accounts will be listed to find existing matches
+      - For existing user accounts, script user will be asked if they want to continue
+    - Create a new OBJECT_KEY (API key) and assign it to the new Service Account user\n
+""")
+
         # use an Odata filter to retrieve a list of clusters, filtered by AOS clusters ONLY
         # in the context of this query, the valid cluster function values are 'AOS' and 'PRISM_CENTRAL'
         print("Retrieving cluster list ...")
@@ -135,7 +151,7 @@ def main():
             found_subnets.append({"name": subnet.name, "ext_id": subnet.ext_id})
         print(f"({len(subnets_list.data)}) subnets were found.")
         pprint(found_subnets)
-        print("\nThis basic demo uses a single subnet for all network services.")
+        print("\nThis demo uses a single subnet for all network services.")
         expected_subnet_name = input(
             "\nEnter the name of the subnet from the list above: "
         ).lower()
@@ -155,14 +171,26 @@ def main():
         subnet_ext_id = matches[0]["ext_id"]
 
         # collect details for use in upcoming steps
-        store_name = input("\nEnter the name of the new Objects Store: ").lower()
-        bucket_name = input("Enter a name for the new bucket: ")
+        store_pattern = r"^(?=.{1,16}$)[A-Za-z](?:[A-Za-z0-9-]*[A-Za-z0-9])?$"
+        store_name = ""
+        print("Requesting compliant Object Store name ...")
+        while not re.search(store_pattern, store_name):
+            store_name = input("\nEnter the name of the new Object Store: ")
+        print("Object Store name meets requirements, continuing ...")
+
+        bucket_pattern = r"^[a-z][a-z0-9.-]{1,62}[a-z0-9]$"
+        bucket_name = ""
+        print("Requesting compliant Bucket name ...")
+        while not re.search(bucket_pattern, bucket_name):
+            bucket_name = input("\nEnter a name for the new bucket: ")
+        print("Bucket name meets requirements, continuing ...")
+
         print(
             "\nAPI keys of type OBJECT_KEY can only be associated with users of type Service Account.  This demo will create a new service account, then create a new API key for the new user.\n"
         )
         service_account_username = input("Enter a name for the Service Account user: ")
 
-        print(f"\nChecking for existing Objects Store named {store_name} ...")
+        print(f"\nChecking for existing Object Store named {store_name} ...")
 
         store_list = objects_instance.list_objectstores(
             async_req=False, _filter=f"name eq '{store_name}'"
@@ -182,13 +210,13 @@ def main():
 
             storage_vip = input(
                 "Enter the storage network's VIP (must be outside the DHCP range): "
-            ).lower()
+            )
             dns_ip = input(
                 "Enter the storage network's DNS IP (must be outside the DHCP range): "
-            ).lower()
+            )
             public_ip = input(
                 "Enter the public network IP (must be outside the DHCP range): "
-            ).lower()
+            )
 
             worker_nodes = 1
             domain_name = "msp.cluster.local"
@@ -257,8 +285,7 @@ def main():
         # do some quick validation to ensure there are no conflicts in upcoming steps
         user_validation = iam_instance.list_users(
             async_req=False,
-            _filter="username eq 'objects_u\
-ser' and userType eq Iam.Authn.UserType'SERVICE_ACCOUNT'",
+            _filter=f"username eq '{service_account_username}' and userType eq Iam.Authn.UserType'SERVICE_ACCOUNT'",
         )
         if len(user_validation.data) == 0:
             # create a new user of type service account
@@ -293,6 +320,7 @@ ser' and userType eq Iam.Authn.UserType'SERVICE_ACCOUNT'",
                 print(
                     f"Continuing with existing user account named {service_account_username} ..."
                 )
+                print(user_validation)
                 user_extid = user_validation.data[0].ext_id
 
         # build the Objects key payload
@@ -328,7 +356,7 @@ ser' and userType eq Iam.Authn.UserType'SERVICE_ACCOUNT'",
             # create a new bucket on the new Object Store
             print(f"Creating bucket named {bucket_name} ...")
 
-            # this part requires the AWS boto3 library
+            # this section uses the AWS boto3 library
             session = boto3.session.Session()
 
             # setup the s3 session
@@ -354,6 +382,7 @@ ser' and userType eq Iam.Authn.UserType'SERVICE_ACCOUNT'",
                     s3c.create_bucket(Bucket=bucket_name)
                     print(f"Bucket named {bucket_name} created successfully.")
                 except Exception as ex:
+                    # unhandled exception
                     print("Exception occurred while creating bucket:")
                     print(f"{ex}")
         else:
