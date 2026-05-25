@@ -23,6 +23,7 @@ dependencies = [
     "termcolor>=3.1.0",
     "tme",
     "boto3>=1.42.59",
+    "ntnx-multidomain-py-client>=4.3.1",
 ]
 
 [dependency-groups]

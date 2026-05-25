@@ -311,6 +311,22 @@ wheels = [
 ]
 
 [[package]]
+name = "ntnx-multidomain-py-client"
+version = "4.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "certifi" },
+    { name = "pysocks" },
+    { name = "python-dateutil" },
+    { name = "six" },
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ac/2f/b1c8a887b31601d133ba0779459fff0b0d6f744012cdd28fb2156380c750/ntnx_multidomain_py_client-4.3.1.tar.gz", hash = "sha256:e26b8abbd7548e74e08df1fbfe8dbbd5f2d0215c3d423d05a71bd79c0e60d513", size = 92634, upload-time = "2026-03-24T16:03:26.843Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cd/1f/c184145a77ca5b82a676fb4933bc6981495a7aba8fe784dc3273097e2f21/ntnx_multidomain_py_client-4.3.1-py3-none-any.whl", hash = "sha256:c578b685644b5ff2ff252b637b3922d5183de1107a9f07d2032607453fc51024", size = 305506, upload-time = "2026-03-24T16:03:25.743Z" },
+]
+
+[[package]]
 name = "ntnx-networking-py-client"
 version = "4.2.1"
 source = { registry = "https://pypi.org/simple" }
@@ -401,6 +417,7 @@ dependencies = [
     { name = "ntnx-iam-py-client" },
     { name = "ntnx-lifecycle-py-client" },
     { name = "ntnx-microseg-py-client" },
+    { name = "ntnx-multidomain-py-client" },
     { name = "ntnx-networking-py-client" },
     { name = "ntnx-objects-py-client" },
     { name = "ntnx-opsmgmt-py-client" },
@@ -428,6 +445,7 @@ requires-dist = [
     { name = "ntnx-iam-py-client", specifier = "==4.1.1b2" },
     { name = "ntnx-lifecycle-py-client", specifier = "==4.2.1" },
     { name = "ntnx-microseg-py-client", specifier = "==4.2.1" },
+    { name = "ntnx-multidomain-py-client", specifier = ">=4.3.1" },
     { name = "ntnx-networking-py-client", specifier = "==4.2.1" },
     { name = "ntnx-objects-py-client", specifier = "==4.0.2" },
     { name = "ntnx-opsmgmt-py-client", specifier = "==4.0.3" },
