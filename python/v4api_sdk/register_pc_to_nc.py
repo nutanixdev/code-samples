@@ -118,12 +118,11 @@ Central password for {env_config['nc_username']}: ", stream=None)
 
         # create configuration instances for MultiDomain
         # note this uses the NC endpoint and credentials
-        for config in [md_config]:
-            config.host = env_config["nc_fqdn"]
-            config.port = "443"
-            config.username = env_config["nc_username"]
-            config.password = nc_password
-            config.verify_ssl = False
+        md_config.host = env_config["nc_fqdn"]
+        md_config.port = "443"
+        md_config.username = env_config["nc_username"]
+        md_config.password = nc_password
+        md_config.verify_ssl = False
 
         # create the instance of the ApiClient classes
         iam_client = IamClient(configuration=iam_config)
@@ -151,6 +150,9 @@ NC registration process?")
             # get the PC domain's extId
             pc_domain_extid = cluster_list.data[0].ext_id
             print(f"Cluster of type PRISM_CENTRAL found ({pc_domain_extid}).")
+        else:
+            print(f"[bold red]No clusters of type PRISM_CENTRAL were found.[/bold red]  Exiting ...")
+            sys.exit()
 
         # create the instance of the IAM API class
         iam_instance = DirectoryServicesApi(api_client=iam_client)
@@ -191,6 +193,7 @@ found ({location_extid}).")
             print("Location [bold red]\
 New York City[/bold red] \
 not found. Exiting ...")
+            sys.exit()
 
         print("Creating registered domain ...")
 
@@ -216,7 +219,7 @@ not found. Exiting ...")
             timeout = 10
             print(f"Waiting for {timeout} seconds before checking status ...")
             for time_remaining in range(timeout, 0, -1):
-                print(time_remaining, end="...", flush=False)
+                print(time_remaining, end="...", flush=True)
                 time.sleep(1)
 
             # setup REST API request credentials
@@ -246,9 +249,10 @@ not found. Exiting ...")
                 "GET",
                 task_details_url,
                 headers=headers,
-                verify=False,
+                verify=False,  # SSL verification disabled — see security note at top of main()
                 timeout=10
             )
+            task_details.raise_for_status()
             result = task_details.json()["status"]
             if result == "FAILED":
                 result_message = task_details.json()["data"]["subStateInfo"]["errorDetail"]  # pylint: disable=line-too-long # noqa: E501
@@ -260,7 +264,7 @@ not found. Exiting ...")
                 print("[bold green]SUCCESSFUL[/bold green], continuing ...")
 
         else:
-            print("Created registered domain task cannot \
+            print("Registered domain could \
 be created. Exiting ...")
             sys.exit()
 
@@ -277,6 +281,7 @@ be created. Exiting ...")
         else:
             print(f"Registered domain {pc_domain_extid} [bold red]\
 not found[/bold red]. Exiting ...")
+            sys.exit()
 
         # the domain registration was successful
         target_url = new_domain.data.registration_config.target_url
@@ -286,7 +291,7 @@ not found[/bold red]. Exiting ...")
 
         print("Domain details:")
         print(f"    Target URL: {target_url}")
-        print(f"    API key: {api_key} (Don't display this \
+        print(f"    API key: {api_key} ([bold red]DO NOT[/bold red] display this \
 on screen in production!)")
         print(f"    API key ID: {key_id}")
 
@@ -369,6 +374,7 @@ RUNNING[/bold yellow] ... ", end="", flush=True)
         else:
             print("PC to NC local domain registration cannot \
 be completed. Exiting ...")
+            sys.exit()
 
     except (IAMException, ClusterException, MDException, PrismException) as ex:
         print(
