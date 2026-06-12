@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/code-samples-private/" />
+  <Folder Name="/code-samples-private/csharp/" />
+  <Folder Name="/code-samples-private/csharp/v4api_client/" />
+  <Folder Name="/code-samples-private/csharp/v4api_client/list_vms/">
+    <Project Path="/Users/christo.rasmuss/Data/solutions/nutanix/code-samples-private/csharp/v4api_client/list_vms/Nutanix v4 API Demo - List VMs/Nutanix v4 API Demo - List VMs.csproj" />
+  </Folder>
+  <Folder Name="/code-samples-private/csharp/v4api_sdk/">
+    <Project Path="/Users/christo.rasmuss/Data/solutions/nutanix/code-samples-private/csharp/v4api_sdk/csharp_demo/csharp_demo.csproj" />
+  </Folder>
+</Solution>
