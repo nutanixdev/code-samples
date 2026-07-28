@@ -28,9 +28,6 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "black>=25.11.0",
-    "flake8>=7.3.0",
-    "pylint>=3.3.9",
     "ruff>=0.15.0",
 ]
 
@@ -41,3 +38,7 @@ members = [
 
 [tool.uv.sources]
 tme = { workspace = true }
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
