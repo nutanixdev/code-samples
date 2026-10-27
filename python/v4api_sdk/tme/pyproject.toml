@@ -1,0 +1,19 @@
+[project]
+name = "tme"
+version = "0.1.0"
+description = "Simple module to allow function re-use across Nutanix v4 SDK code samples"
+readme = "README.md"
+authors = [
+    { name = "Chris Rasmussen", email = "christo.rasmuss@nutanix.com" }
+]
+requires-python = ">=3.9"
+dependencies = [
+    "urllib3>=1.26.20",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = true

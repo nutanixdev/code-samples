@@ -2,17 +2,16 @@
 Simple module to allow function re-use across Nutanix
 v4 SDK code samples
 
-Requires Prism Central 2024.3 or later, AOS 7.0 or later
+Requires Prism Central 7.5 or later, AOS 7.5 or later
 """
 
 import urllib3
-from dataclasses import dataclass
 
 from .utils import Config
 
 class ApiClient:
     """
-    class to Nutanix v4 API and SDK connections
+    class to manage Nutanix v4 API and SDK connections
     """
 
     def __init__(self, config: Config, sdk_module: str = ""):

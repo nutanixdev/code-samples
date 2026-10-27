@@ -2,7 +2,7 @@
 Simple module to allow function re-use across Nutanix
 v4 SDK code samples
 
-Requires Prism Central 2024.1 or later, AOS 6.8 or later
+Requires Prism Central 7.5 or later, AOS 7.5 or later
 """
 
 import time
@@ -11,6 +11,7 @@ import argparse
 import getpass
 from dataclasses import dataclass
 from timeit import default_timer as timer
+from rich import print
 
 import ntnx_prism_py_client
 from ntnx_prism_py_client import ApiClient as PrismClient
@@ -56,9 +57,6 @@ class Utils:
         )
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    def printc(self, level: str = "INFO", text: str = "", color: str = ""):
-        return(f"[%s] %s" % (colored(level, color), text))
-
     def get_environment(self):
         """
         setup the command line parameters
@@ -78,19 +76,20 @@ class Utils:
         args = parser.parse_args()
 
         # get the cluster password
-        cluster_password = getpass.getpass(prompt=self.printc("INPUT", "Enter your Prism Central password: ", "blue"), stream=None)
+        cluster_password = getpass.getpass(prompt="Enter your Prism Central password: ", stream=None)
 
             # make sure the user enters a password
         if not cluster_password:
             while not cluster_password:
-                print(self.printc("ERR", "Password cannot be empty. Enter a password or Ctrl-C/Ctrl-D to exit.", "red"))
-                cluster_password = getpass.getpass(prompt=self.printc("INPUT", "Enter your Prism Central password: ", "blue"), stream=None
+                print("Password cannot be empty. Enter a password or Ctrl-C/Ctrl-D to exit.")
+                cluster_password = getpass.getpass(prompt="Enter your Prism Central password: ", stream=None
                 )
 
-        config = Config(pc_ip=args.pc_ip,
+        self.config = Config(pc_ip=args.pc_ip,
                         pc_username=args.username,
                         pc_password=cluster_password)
-        return config
+        
+        return self.config
 
     def get_task(self, ext_id: str):
         """
@@ -110,7 +109,7 @@ class Utils:
         return yes_no == "yes"
 
     def monitor_task(
-        self, task_ext_id, task_name, pc_ip, username, password, poll_timeout, prefix = ""
+        self, task_ext_id, task_name, pc_ip, username, password, poll_timeout=1, prefix = ""
     ):
         """
         method used to monitor Prism Central tasks
