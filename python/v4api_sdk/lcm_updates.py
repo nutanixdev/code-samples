@@ -98,12 +98,32 @@ def main():
         # cluster_list = cluster_instance.list_clusters(async_req=False, _filter="name eq 'Dev'")
 
         # option 2 - filter by Prism Central clusters only
-        cluster_list = cluster_instance.list_clusters(async_req=False, _filter="config/clusterFunction/any(a:a eq Clustermgmt.Config.ClusterFunctionRef'PRISM_CENTRAL')")
+        # cluster_list = cluster_instance.list_clusters(async_req=False, _filter="config/clusterFunction/any(a:a eq Clustermgmt.Config.ClusterFunctionRef'PRISM_CENTRAL')")
 
-        # get the cluster extid
-        # some LCM APIs support the user of a specific cluster ID
-        cluster_extid = cluster_list.data[0].ext_id
-        cluster_name = cluster_list.data[0].name
+        # option 3 - don't filter clusters at all
+        cluster_list = cluster_instance.list_clusters(async_req=False)
+
+        # build a simple list of clusters so the user's selection
+        # can be matched to a cluster name and ext_id later
+        clusters = [
+            {"name": cluster.name, "ext_id": cluster.ext_id} for cluster in cluster_list.data
+        ]
+
+        print("Found the following clusters:")
+
+        for i, cluster in enumerate(clusters, start=1):
+            print(f"{i}: {cluster['name']} (ext_id {cluster['ext_id']})")
+
+        # ask which cluster to use, repeating until a valid number is entered
+        # some LCM APIs support the use of a specific cluster ID
+        selection = 0
+        while selection not in range(1, len(clusters) + 1):
+            answer = input(f"Select a cluster (1-{len(clusters)}): ")
+            selection = int(answer) if answer.isdigit() else 0
+
+        cluster_extid = clusters[selection - 1]["ext_id"]
+        cluster_name = clusters[selection - 1]["name"]
+        print(f"Using cluster {cluster_name} (ext_id {cluster_extid})")
 
         # the confirm function simply asks for a yes/NO confirmation before
         # continuing with the specified action
