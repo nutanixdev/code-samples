@@ -1,0 +1,12 @@
+[
+	{
+		"key": "category_key1",
+		"value": "category_value1",
+		"description": "Test category 1"
+	},
+	{
+		"key": "category_key2",
+		"value": "category_value2",
+		"description": "Test category 2"
+	}
+]

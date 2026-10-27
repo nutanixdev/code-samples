@@ -1,0 +1,10 @@
+#cloud-config
+users:
+  - name: nutanix
+    ssh-authorized-keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQD486FNEscDkK4xqyvT5Syg+z2pjvJVp7ndBGcq3jhS8SFcelgsam2H3wHnV/ybH3dxc8a+Qd1RdACCqT5F+798BJj8XOjOAktI35yQd8Hh8jmUAHzmwh8QUGgFKnmsyI7aX3DLFmHrfp31LlHFuiNNCw9vW1V9klfTXDxuqwC243qgGNYqgeCbHMBHW21Ou+YhuZKAaacNuhgtaE5uw8kmCbg2KJTgxVSzcac3WU1Jih59fS5xIox6nEAGwQeo3jsBg2QT5oZLgBA4uo+ZHoxysbVaabd2XpEi+Pzf2NYJl6cYomAq2uNmieWBe0FPsBPPL8rmbG+qyg/EDfBWJuXjE5/eqDTbeb9/csRaXF94nhRgpMpBlcP7kVmeHmq4OeImbZbu9hWjO81VLss7L9MSaPK4Cl1ULXGO0NswtVqXlSz4tdSjpuYt4hSW1o2Hh58QMqoBmKAa+tw5PvpaMuVyRbklRFBmoBN9t6hb3tUDQwYLlO6FU73Ixhp8sPQelpcwtlh/SSAvncyEVOku65pJ8a0WfrmLCSIx4/KKbXH09eOY2T/U6BeFDXsorXFwN2/vaGJXB0HCMYI+RhG/vaj5BsJ4GL8iHBiXG7A7MEQel4j6UWzThFFZpBz+B2gs+aJrtf3pqYABWmLepn1rd049gCixyMnuPDo6+H7FD+GD6w== no-reply@acme.com
+    sudo:
+    - ALL=(ALL) NOPASSWD:ALL
+runcmd:
+  - update-crypto-policies --set DEFAULT:SHA1
+  - systemctl restart --no-block sshd.service

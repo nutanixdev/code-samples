@@ -14,15 +14,11 @@
 			{
 				"prefix_length": 32,
 				"ip_address": "10.42.194.10"
-			},
-			{
-				"prefix_length": 32,
-				"ip_address": "10.42.196.10"
-		        }
+			}
 		],
 	        "dhcp_server": {
 			"prefix_length": 32,
-			"ip_address": "10.38.141.126"
+			"ip_address": "10.38.141.12"
 		},
 		"dhcp_pool": {
 			"start_ip": {
@@ -31,7 +27,7 @@
 			},
 			"end_ip": {
 				"prefix_length": 32,
-				"ip_address": "10.38.141.125"
+				"ip_address": "10.38.141.120"
 			}
 		}
 	},
