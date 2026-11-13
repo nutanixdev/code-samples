@@ -1,0 +1,73 @@
+# Based on https://github.com/PowerShell/PowerShell/blob/master/.gitignore
+# Entries specific to building the PowerShell repository itself have been removed.
+
+# Build output
+bin/
+obj/
+/debug/
+/staging/
+/Packages/
+*.nuget.props
+project.lock.json
+
+# Test results
+*-tests.xml
+TestsResults*.xml
+ParallelXUnitResults.xml
+xUnitResults.xml
+**/pester-analysis-*/
+
+# Visual Studio and VS Code
+.vs/
+*.suo
+*.csproj.user
+.vscode/
+.ionide/
+
+# Executables and binaries
+*.exe
+*.msi
+*.appx
+*.msix
+*.pdb
+*.dll
+*.wixpdb
+
+# Packages
+*.deb
+*.tar.gz
+*.zip
+*.rpm
+*.pkg
+*.nupkg
+*.AppImage
+
+# Per-user profile
+.profile.ps1
+
+# Log files
+logfile/*
+*.log
+
+# Local environment and credential files
+.env
+.env.local
+*.cred.xml
+*.credential.xml
+
+# macOS
+.DS_Store
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+.AppleDouble
+.LSOverride
