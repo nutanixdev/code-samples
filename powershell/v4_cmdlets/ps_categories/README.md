@@ -20,10 +20,12 @@ Install-Module -Name Nutanix.Prism,Nutanix.Vmm -Scope CurrentUser
 ## Usage
 
 ```powershell
-./assign_vm_categories.ps1 -pc_ip <pc_ip_or_fqdn> -username <username> -cat_key <category_key> -cat_value <category_value>
+./assign_vm_categories.ps1 -pc_ip <pc_ip_or_fqdn> -username <username> -cat_key <category_key> -cat_value <category_value> [-SkipCertificateCheck]
 ```
 
 The script prompts for the Prism Central password, so no password is stored in the script.
+
+TLS certificates are validated by default. `-SkipCertificateCheck` disables that validation for Prism Central instances with self-signed certificates; use it only in a test environment, as it may expose the connection to an unverified endpoint.
 
 ## Screenshot
 

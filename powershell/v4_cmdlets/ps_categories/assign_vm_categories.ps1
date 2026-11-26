@@ -16,7 +16,11 @@
 #   - The category passed with -cat_key and -cat_value must already exist in your Prism Central
 #
 # Usage:
-#   ./assign_vm_categories.ps1 -pc_ip <pc_ip_or_fqdn> -username <username> -cat_key <category_key> -cat_value <category_value>
+#   ./assign_vm_categories.ps1 -pc_ip <pc_ip_or_fqdn> -username <username> -cat_key <category_key> -cat_value <category_value> [-SkipCertificateCheck]
+#
+#   -SkipCertificateCheck disables TLS certificate validation; use it only in a test
+#   environment with a self-signed certificate, as it may expose the connection to an
+#   unverified endpoint
 #
 # Example:
 #   ./assign_vm_categories.ps1 -pc_ip 10.0.0.1 -username admin -cat_key Environment -cat_value Production
@@ -25,7 +29,8 @@ param(
     [Parameter(Mandatory)] [string] $pc_ip,
     [Parameter(Mandatory)] [string] $username,
     [Parameter(Mandatory)] [string] $cat_key,
-    [Parameter(Mandatory)] [string] $cat_value
+    [Parameter(Mandatory)] [string] $cat_value,
+    [switch] $SkipCertificateCheck
 )
 
 # the VM that will have the category assigned
@@ -38,13 +43,13 @@ Import-Module Nutanix.Vmm
 # prompt for the password; it is never stored in the script
 $Credential = Get-Credential -UserName $username -Message "Prism Central credentials"
 
-# -SkipCertificateCheck allows self-signed certificates; remove it if
-# your Prism Central uses a trusted certificate
-Set-PrismCentralConfig -Host $pc_ip -Username $Credential.UserName -Password $Credential.Password -SkipCertificateCheck
+# TLS certificates are validated unless -SkipCertificateCheck is passed
+Set-PrismCentralConfig -Host $pc_ip -Username $Credential.UserName -Password $Credential.Password -SkipCertificateCheck:$SkipCertificateCheck
 
 # look up the category by key and value to get its ExtId
 Write-Host "Looking up category $($cat_key):$($cat_value)"
-$Category = Get-ConfigCategoriesList -Filter_ "key eq '$cat_key' and value eq '$cat_value'"
+# single quotes are doubled so values such as O'Brien do not break the filter
+$Category = Get-ConfigCategoriesList -Filter_ "key eq '$($cat_key -replace "'", "''")' and value eq '$($cat_value -replace "'", "''")'"
 if (-not $Category) {
     throw "No category found with key '$cat_key' and value '$cat_value'"
 }
@@ -53,7 +58,7 @@ Write-Host "Found category $($cat_key):$($cat_value) with ExtId $($Category.ExtI
 # look up the VM by name to get its ExtId; VM names are not guaranteed to be
 # unique, so stop unless exactly one VM matches
 Write-Host "Looking up VM $VmName"
-$Vms = @(Get-AhvConfigVmsList -Filter_ "name eq '$VmName'")
+$Vms = @(Get-AhvConfigVmsList -Filter_ "name eq '$($VmName -replace "'", "''")'")
 if ($Vms.Count -ne 1) {
     throw "Expected exactly 1 VM named '$VmName', found $($Vms.Count)"
 }
